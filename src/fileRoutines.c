@@ -46,6 +46,7 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
 
     // now that we have the whole information about the data record we can update our header
     head->nroPagDisco = countRecords*DATARECORDSIZE / CLUSTERSIZE;
+    if(countRecords*DATARECORDSIZE % CLUSTERSIZE != 0) head->nroPagDisco++;
     head->proxRRN = countRecords + 1;
     head->status = '1';
 
