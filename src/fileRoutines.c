@@ -2,49 +2,33 @@
 
 // this function will read the CSV from CSVfp line by line creating a temporary data record on RAM to be stored on the binary file binfp
 void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
-    char* tempLine, tempField;
+    char* tempLine, *tempField;
     int countRecords=0; // this counter will count how many lines there are in the csv(= number of records in the bin file) to be used on the header
     DATARECORD tempData;
-    tempLine = malloc(50 * sizeof(char));
-    tempField = malloc(50 * sizeof(char));
+    tempLine = (char *) malloc(50 * sizeof(char));
+    //tempField = (char *) malloc(50 * sizeof(char));
     const int flagSequence[7] = {2,7,8,3,4,5,6}; // This constant array helds the sequence of the fields inputted on CSV
     // the sequece is defined as: idConecta, nomePoPs, nomePais, siglaPais, idPoPsConectado, unidadeMedida, velocidade
     // this fields have the following fieldFlags(defined on the sequence of declaration on struct and used on other functions such as readFile):
     // idConecta = 2, nomePoPs = 7, nomePais = 8, siglaPais = 3, idPoPsConectado = 4, unidadeMedida = 5, velocidade = 6
 
-
+    printf("first calling readCSVLine to the first line\n");
     readCSVLine(CSVfp, &tempLine); // this simply reads the first line of the csv that consists of the sequence of fields
                                    // as the sequence is constant in this project, this is not used by the program (it's just a default for csv files)
+    printf("readCSVLine has first exited with tempLine=%s\n", tempLine);
 
     // this first loop will get line by line(record by record) of the csv and write it onto the file (we need to do this with tempData bc if the file is too large it wouldn't fit in RAM, so we cannot input everything first)
     while(readCSVLine(CSVfp, &tempLine) != 0){
+        printf("inside the outter loop and got tempLine=%s\n",tempLine);
         // this second loop will put the line values onto a temporary data record to later be written onto a file
         for(int i=0;i<7;i++){
-            tempField = strtok(tempLine, ",");
-
-            // treating the case of double delimiters, meaning the field has null value
-            if( strcmp(tempField, ",") == 0){ // this will indicate that the field has null value, so we must update the tempField to the accordingly null indicator
-                switch (flagSequence[i])
-                {
-                case 2: // idConecta field(int)
-                case 4: // idPoPsConectado field(int)
-                case 6: // velocidade field(int)
-                    strcpy(tempField, "-1");
-                    break;
-                
-                case 5: // unidadeMedida field(char)
-                    strcpy(tempField, "$");
-                    break;
-                case 3: // siglaPais field(static char array)
-                    strcpy(tempField, "$$");
-                case 7: // nomePoPs field(variable size string)
-                case 8: // nomePais field(variable size string)
-                        strcpy(tempField, ""); // the variable-sized strings receive null bc they will have no trash printed later on writeFile
-                                               // this happens bc the trash shall be printed after the last delimiter for variable-sized fields
-                        break;
-                }
+            if(i==0) tempField = zstrtok(tempLine, ","); // in the first iteration we pass the pointer to tempLine
+            else{
+                tempField = zstrtok(NULL,",");           // in the next iterations we pass NULL pointer - by doing so, zstrtok maintains the counter on the original string and we can get the next field
             }
+            printf("inside the inner loop for %dth time and got tempField=%s\n",i,tempField);
 
+            printf("calling putCSVontoAccordingField with flagSequence=%d and tempField=%s\n",flagSequence[i], tempField);
             // with tempField updated to null case if needed or not, this function puts the tempField onto the tempData respective field
             putCSVontoAccordingField(CSVfp, &tempData,tempField, flagSequence[i]);
             countRecords++;
@@ -55,6 +39,8 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
         tempData.encadeamento = -1;
 
         // with the temporary data record set-up, we write it onto the binary file
+        printf("going into writeDataRecord with the record set as:\n");
+        printRecord(tempData);
         writeDataRecord(binfp, &tempData);
     }
 
@@ -65,8 +51,8 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
 
 
     // freeing some temp memory that was allocated
-    free(tempLine);
-    free(tempField);
+    //free(tempLine);
+    //free(tempField);
 
 }
 
@@ -76,34 +62,65 @@ void putCSVontoAccordingField(FILE* fp, DATARECORD* tempData, char* fieldBuff, i
     switch (fieldFlag) // this will not switch between all possible fieldFlags since fieldFlags 0(removido) and 1(encadeamento) are invalid for this functionality
     {
         case 2: // idConecta field (fixed size as an int)
-            tempData->idConecta = atoi(fieldBuff);
+            if(strcmp(fieldBuff, ",") == 0){
+                tempData->idConecta = -1;
+            }else{
+                tempData->idConecta = atoi(fieldBuff);
+            }
             break;
         case 3: // siglaPais field (fixed size as static array of lenght 3)
-            strcpy(tempData->siglaPais,fieldBuff);
-            tempData->siglaPais[2] = '\0';       
+            if(strcmp(fieldBuff, ",") == 0){
+                tempData->siglaPais[0] = '$';
+                tempData->siglaPais[1] = '$';
+                tempData->siglaPais[2] = '\0';
+            }else{
+                strcpy(tempData->siglaPais,fieldBuff);
+                tempData->siglaPais[2] = '\0';
+            }    
             break;
 
         case 4: // idPoPsConectado field(fixed size as an int)
+            if(strcmp(fieldBuff, ",") == 0){
+                tempData->idPoPsConectado = -1;
+            }else{
             tempData->idPoPsConectado = atoi(fieldBuff);
+            }
             break;
 
         case 5: // unidadeMedida field(fixed size as a char)
+            if(strcmp(fieldBuff, ",") == 0){
+                tempData->unidadeMedida = '$';
+            }else{
             tempData->unidadeMedida = *(fieldBuff);
+            }
             break;
 
         case 6: // velocidade field(fixed size as an int)
+            if(strcmp(fieldBuff, ",") == 0){
+                tempData->velocidade = -1;
+            }else{
             tempData->velocidade = atoi(fieldBuff);
+            }
             break;
 
         case 7: // nomePoPs field(variable size string)
-            tempData->nomePoPs = malloc( (DATARECORDSIZE-20) * sizeof(char)); 
+            if(strcmp(fieldBuff, ",") == 0) {
+                tempData->nomePoPs = malloc(1); 
+                tempData->nomePoPs[0] = '\0';
+            }
+            else{
+            tempData->nomePoPs = malloc( MAX_VARSTRINGSIZE * sizeof(char)); 
             tempData->nomePoPs = fieldBuff;
-            tempData->nomePoPs = realloc(tempData->nomePoPs, fieldBuff);
+            //tempData->nomePoPs = realloc(tempData->nomePoPs, (strlen(tempData->nomePoPs) + 1) * sizeof(char));
+            }
             break;
         case 8: // nomePais field(variable size string)
-            tempData->nomePais = malloc( (DATARECORDSIZE-20) * sizeof(char)); 
+            if(strcmp(fieldBuff, ",") == 0) {tempData->nomePais = malloc(1); tempData->nomePais[0] = '\0'; printf("ja aloquei tudo pro caso , do 8 amigo\n");}
+            else{
+            tempData->nomePais = malloc( MAX_VARSTRINGSIZE * sizeof(char)); 
             tempData->nomePais = fieldBuff;
-            tempData->nomePais = realloc(tempData->nomePoPs, fieldBuff);
+            //tempData->nomePais = realloc(tempData->nomePais, (strlen(tempData->nomePais ) + 1) * sizeof(char));
+            }
             break;
         default:
             break;
@@ -113,10 +130,11 @@ void putCSVontoAccordingField(FILE* fp, DATARECORD* tempData, char* fieldBuff, i
 int readCSVLine(FILE *fp, char** strline){
     int nullFlag=1,i=0;
     char buffChar;
-
+    
     while(1){
-        nullFlag = fscanf(fp, "%c", &buffChar);
+        nullFlag = fread(&buffChar,sizeof(char),1, fp);
         if(nullFlag == 0) return 0;
+        if(buffChar == '\n') break;
 
         (*strline)[i] = buffChar;
         i++;
@@ -128,12 +146,12 @@ int readCSVLine(FILE *fp, char** strline){
 void readFile(FILE* fp){
     int countRecords=0;
     DATARECORD tempData;
-    HEADER tempHeader;
+    // HEADER tempHeader;
 
-    readHeader(fp, &tempHeader); // AINDA FALTA IMPLEMENTAR
+    // readHeader(fp, &tempHeader); // AINDA FALTA IMPLEMENTAR
 
     while( readDataRecord(fp, &tempData) != 0){ // this reads a Record from fp and puts its data into tempData
-        printData(tempData);     // AINDA FALTA IMPLEMENTAR      
+        // printData(tempData);     // AINDA FALTA IMPLEMENTAR      
         countRecords++;
     }
 
@@ -171,6 +189,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
     
     int outSizeCounter=0;
     int nullFlag=1; // this flag will indicate when fread fails(meaning the file has ended)
+    int i=0;
     char buffChar = 'S';
 
     switch(fieldFlag){
@@ -212,7 +231,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
         case 7: // nomePoPs Field
             outData->nomePoPs = malloc(MAX_VARSTRINGSIZE * sizeof(char));
 
-            int i=0;
+            i=0;
             while(1){
                 nullFlag = fscanf(fp, "%c", &buffChar);
                 if(nullFlag == 0) break;
@@ -237,7 +256,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
 
             outData->nomePais = malloc(MAX_VARSTRINGSIZE * sizeof(char));
 
-            int i=0;
+            i=0;
             while(1){
                 nullFlag = fscanf(fp, "%c", &buffChar);
                 if(nullFlag == 0) break;
@@ -316,22 +335,22 @@ void writeHeaderRecord(FILE *fp, HEADER* hr){
 void writeHeaderField(FILE *fp, HEADER* hr, int fieldFlag){
     switch(fieldFlag){
         case 0: // status field
-            fwrite(hr->status, sizeof(char),1,fp);
+            fwrite(&(hr->status), sizeof(char),1,fp);
             break;
         case 1: // topoStack field
-            fwrite(hr->topoStack, sizeof(int),1,fp);
+            fwrite(&(hr->topoStack), sizeof(int),1,fp);
             break;
         case 2: // proxRRN field
-            fwrite(hr->proxRRN, sizeof(int),1,fp);
+            fwrite(&(hr->proxRRN), sizeof(int),1,fp);
             break;
         case 3: // nroRegRem field
-            fwrite(hr->nroRegRem, sizeof(int),1,fp);
+            fwrite(&(hr->nroRegRem), sizeof(int),1,fp);
             break;
         case 4: // nroPagDisco field
-            fwrite(hr->nroPagDisco, sizeof(int),1,fp);
+            fwrite(&(hr->nroPagDisco), sizeof(int),1,fp);
             break;
         case 5: // qttCompacta field
-            fwrite(hr->qttCompacta, sizeof(int),1,fp);
+            fwrite(&(hr->qttCompacta), sizeof(int),1,fp);
             break;
     }
 
@@ -355,59 +374,62 @@ void writeDataRecord(FILE *fp, DATARECORD* dr){
 }
 
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag){
-    int sizeWritten=0;
+    int sizeWritten=0,i=0;
+    char delim = '|';
     switch(fieldFlag){
         case 0: // removido Field
-            fwrite(dr->removido, sizeof(int),1, fp);
+            fwrite(&(dr->removido), sizeof(char),1, fp);
             sizeWritten = sizeof(int);
             break;
 
         case 1: // encadeamento Field
-            fwrite(dr->encadeamento, sizeof(int),1, fp);
+            fwrite(&(dr->encadeamento), sizeof(int),1, fp);
             sizeWritten = sizeof(int);
             break;
 
         case 2: // idConecta Field
-            fwrite(dr->encadeamento, sizeof(int), 1, fp);
+            fwrite(&(dr->encadeamento), sizeof(int), 1, fp);
             sizeWritten = sizeof(int);
             break;
 
         case 3: // siglaPais Field
-            fwrite(dr->siglaPais,sizeof(char),2,fp); // writes 2 chars bc we do not write '\0' 
+            fwrite(&(dr->siglaPais),sizeof(char),2,fp); // writes 2 chars bc we do not write '\0' 
             sizeWritten = 2* sizeof(char);
             break;
 
         case 4: // idPoPsConectdo Field
-            fwrite(dr->idPoPsConectado, sizeof(int),1,fp);
+            fwrite(&(dr->idPoPsConectado), sizeof(int),1,fp);
             sizeWritten = sizeof(int);
             break;
         case 5: // unidade Medida Field
-            fwrite(dr->unidadeMedida, sizeof(char), 1, fp);
+            fwrite(&(dr->unidadeMedida), sizeof(char), 1, fp);
             sizeWritten = sizeof(char);
             break;
         
         case 6: // velocidade Field
-            fwrite(dr->velocidade, sizeof(int),1, fp);
+            fwrite(&(dr->velocidade), sizeof(int),1, fp);
             sizeWritten = sizeof(int);
             break;
         
         case 7: // nomePoPs Field
-            int i=0;
+            i=0;
             while(i < strlen(dr->nomePoPs)){
-                fwrite(dr->nomePoPs[i],sizeof(char),1,fp);
+                fwrite(&(dr->nomePoPs[i]),sizeof(char),1,fp);
                 sizeWritten+=sizeof(char);
+                i++;
             }
-            fwrite('|',sizeof(char),1,fp); // after the variable size field we write the delimiter
+            fwrite(&delim,sizeof(char),1,fp); // after the variable size field we write the delimiter
             sizeWritten+=sizeof(char); // +1 byte written for '|'
             break;
         
         case 8: // nomePais Field
-            int i=0;
+            i=0;
             while(i < strlen(dr->nomePais)){
-                fwrite(dr->nomePais[i],sizeof(char),1,fp);
+                fwrite(&(dr->nomePais[i]),sizeof(char),1,fp);
                 sizeWritten+=sizeof(char);
+                i++;
             }
-            fwrite('|',sizeof(char),1,fp); // after the variable size field we write the delimiter
+            fwrite(&delim,sizeof(char),1,fp); // after the variable size field we write the delimiter
             sizeWritten+=sizeof(char); // +1 byte written for '|'
             break;
     }

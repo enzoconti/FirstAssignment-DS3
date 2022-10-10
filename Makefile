@@ -1,26 +1,37 @@
-.PHONY: all
-all: bin/programaTrab
+CC          := gcc
+DEBUG_FLAGS := -g3 -pedantic -Werror=implicit-function-declaration -fsanitize=address,undefined
+FLAGS       := -Wall -Werror #$(DEBUG_FLAGS)
 
-bin/programaTrab: obj/fileRoutines.o obj/functinalities.o obj/structCode.o main.c
-	mkdir -p bin
-	gcc obj/fileRoutines.o obj/functinalities.o obj/structCode.o main.c -I include -o bin/programaTrab
+SRC         := ./src
+BIN         := ./bin
+HEADERS     := ./include
+EXEC        := prog
+ZIP         := exercicio.zip
 
-obj/fileRoutines.o: src/fileRoutines.c include/fileRoutines.h
-	mkdir -p obj
-	gcc -c src/fileRoutines.c -I include -o obj/fileRoutines.o
+# List of all expected $(BIN)/*.o
+ALL         := $(wildcard $(SRC)/*.c)
+ALL         := $(ALL:$(SRC)/%.c=$(BIN)/%.o)
 
-obj/functinalities.o: src/functinalities.c include/functinalities.h
-	mkdir -p obj
-	gcc -c src/functinalities.c -I include -o obj/functinalities.o
 
-obj/structCode.o: src/structCode.c include/structCode.h
-	mkdir -p obj
-	gcc -c src/structCode.c -I include -o obj/structCode.o
+all: $(EXEC)
 
-.PHONY: run
-run:
-	./bin/programaTrab
+compile: clean all
 
-.PHONY: clean
+run: all
+	./$(EXEC)
+
 clean:
-	rm -rf obj bin
+	rm -f $(EXEC) $(BIN)/*.o
+
+zip:
+	rm -f $(ZIP)
+	zip $(ZIP) Makefile $(HEADERS)/*.h $(SRC)/*.c
+
+$(EXEC): $(ALL)
+	$(CC) -o $(EXEC) $(BIN)/*.o $(FLAGS)
+
+$(BIN)/%.o: $(SRC)/%.c $(BIN)
+	$(CC) -o $@ -c $< -I $(HEADERS) $(FLAGS)
+
+$(BIN):
+	mkdir -p $(BIN)

@@ -3,10 +3,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "structCode.h"
 #include "funcoesFornecidas.h"
 #include "functionalities.h"
 #include "globalvalues.h"
-#include "structCode.h"
+
 
 
 void readFile(FILE* fp);

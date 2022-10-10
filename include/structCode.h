@@ -1,9 +1,7 @@
 #ifndef STRUCTCODE_H
 #define STRUCTCODE_H
 
-#include "fileRoutines.h"
-#include "funcoesFornecidas.h"
-#include "functionalities.h"
+
 #include "globalvalues.h"
 
 
