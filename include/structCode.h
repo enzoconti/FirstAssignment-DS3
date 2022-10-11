@@ -20,18 +20,18 @@ typedef struct header{
 
 
 #define DATARECORDSIZE 64 // this is the fixed size of the data record
-#define MAX_VARSTRINGSIZE (64 - 23 - 2) // this is the maximum size any of the variable strings can have(without '\0');
+#define MAX_VARSTRINGSIZE (64 - 21) // this is the maximum size any of the variable strings can have(without '\0');
 // creating a struct to represent the information on the data records
 typedef struct dataRecord{
-    int removido;          // this fixed-size control field represents if the data record has been removed
+    char removido;          // this fixed-size control field represents if the data record has been removed
     int encadeamento;       // this fixed-size control field stores the RRN of the next removed record
     int idConecta;          // this fixed-size field is the id of the point of presence(PoPs) - must be different form 0
     char siglaPais[3];      // this fixed-size field is the 2 character acronym of the country in which the PoP is registered(+1 byte for '\0' that will not be recorded on file)
     int idPoPsConectado;    // this fixed-size field is the id of the connected PoPs
     char unidadeMedida;     // this fixed-size field is the measure unit for the transmission speed (a M character represents Mbps, for example)
     int velocidade;              // this fixed-size field is the speed of transmission
-    char* nomePoPs;         // this variable-size field is the name of the PoPs - its delimitant '\0' will not be stored to a file
-    char* nomePais;         // this variable-size field is the full name of the country - its delimitant '\0' will not be stored to a file
+    char nomePoPs[MAX_VARSTRINGSIZE];         // this variable-size field is the name of the PoPs - its delimitant '\0' will not be stored to a file
+    char nomePais[MAX_VARSTRINGSIZE];         // this variable-size field is the full name of the country - its delimitant '\0' will not be stored to a file
 }DATARECORD;
 
 HEADER newHeader();

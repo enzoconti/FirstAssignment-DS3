@@ -19,47 +19,16 @@ void printRecord(DATARECORD dr){
     printf("unidadeMedida=%c\n", dr.unidadeMedida);
     printf("velocidade=%d\n", dr.velocidade);
     printf("nomePoPs=%s\n", dr.nomePoPs);
-    printf("nomePais=%s\n", dr.nomePais);
+    printf("nomePais=%s\n\n", dr.nomePais);
 }
 
-char *zstrtok(char *str, const char *delim) {
-    static char *s_str = NULL;   /* var to store last address */
-    char *p;
-
-    if (delim == NULL || (str == NULL && s_str == NULL)){
-        return NULL;
-    }
-
-    if (str == NULL){
-        str = s_str;
-    }
-
-    /* if delim is not contained in str, return str */
-    if ((p = strstr(str,delim)) == NULL) {
-        s_str = NULL;
-        return str;
-    }
-
-    /* 
-    * check for consecutive delimiters
-    * if first char is delim, return delim
-    */
-    if (str[0] == delim[0]) {
-        s_str++;
-        return (char *)delim;
-    }
-
-    /* terminate the string */
-    *p = '\0';
-
-    /* save the rest of the string */
-    if ((p+1) != NULL) {
-        s_str = (p + 1);
-    } else {
-        s_str = NULL;
-    }
-
-        return str;
+void printHeader(HEADER h){
+    printf("status=%c\n",h.status);
+    printf("topoStack=%d\n",h.topoStack);
+    printf("proxRRN=%d\n",h.proxRRN);
+    printf("nroRegRem=%d\n",h.nroRegRem);
+    printf("nroPagDisco=%d\n",h.nroPagDisco);
+    printf("qttCompacta=%d\n\n",h.qttCompacta);
 }
 
 void printOpenError(){

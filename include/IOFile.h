@@ -12,8 +12,7 @@
 
 char* inputFilepath();
 void printOpenError();
-char *zstrtok(char *str, const char *delim);
 void printRecord(DATARECORD dr);
-
+void printHeader(HEADER h);
 
 #endif
