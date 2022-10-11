@@ -10,7 +10,7 @@
 #include "globalvalues.h"
 #include "structCode.h"
 
-char* inputFilepath();
+char* inputStr();
 void printOpenError();
 void printRecord(DATARECORD dr);
 void printHeader(HEADER h);

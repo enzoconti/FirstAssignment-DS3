@@ -32,4 +32,6 @@ int main(){
             // functionality6();
             break;
     }
+
+    return 0;
 }

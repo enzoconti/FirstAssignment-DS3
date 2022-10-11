@@ -21,6 +21,9 @@ void writeHeaderRecord(FILE *fp, HEADER* hr);
 void writeHeaderField(FILE *fp, HEADER* hr, int fieldFlag);
 void writeDataRecord(FILE *fp, DATARECORD* dr);
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag);
+HEADER readHeader(FILE* fp);
+void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag);
+DATARECORD searchFile(FILE* fp,char* searchedField);
 /*
 void RRNread(char* filepath, int RRN);
 void writeRecord(FILE *fp, PERSON*p);

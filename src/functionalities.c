@@ -9,10 +9,10 @@ void functionality1(){
     FILE* CSVfp, *binfp;
     char* csvFilepath, *binFilepath; // this will hold the filepaths inputted by keyboard to the corresponding files
     printf("inputting filepaths\n");
-    csvFilepath = inputFilepath();
+    csvFilepath = inputStr();
     printf("got the csv filepath as:%s\n", csvFilepath);
 
-    binFilepath = inputFilepath();
+    binFilepath = inputStr();
     printf("got the bin filepath as:%s\n", binFilepath);
 
     // openning both filepaths
@@ -39,13 +39,45 @@ void functionality1(){
     printf("written header ok, closing files\n");
 
     // closing the files
-    //fclose(CSVfp); // WHY THIS FCLOSE DOES NOT WORK????????????????????????
+    fclose(CSVfp); // WHY THIS FCLOSE DOES NOT WORK????????????????????????
     fclose(binfp);
 
     // outputting onto terminal
     binarioNaTela(binFilepath);
 
     // freeing the allocated space
-    //free(csvFilepath);
-    //free(binFilepath);
+    free(csvFilepath);
+    free(binFilepath);
+}
+
+
+
+void functionality3(){
+    char* binFilepath;
+    FILE* fp;
+    // firstly, the input is given for filepath and the file is opened
+    binFilepath = inputStr();
+    fp = fopen(binFilepath, 'rb');
+
+    // then, the input is given for the number of searches
+    int nSearches;
+    scanf("%d", &nSearches);
+
+    // this loop will get the name of the field and then the search key
+    char searchedField[MAXDATAFIELDNAME];
+    char searchKey[MAX_VARSTRINGSIZE]; // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
+    DATARECORD foundRecord;
+    HEADER h;
+    for(int i=0;i<nSearches;i++){
+        // first the two inputs
+        fgets(searchedField,15,stdin);
+        scan_quote_string(searchKey);
+
+        h = readHeader(fp);
+        foundRecord = searchFile(fp,searchedField,searchKey);
+
+        printSearchResult(foundRecord,i+1,h);
+    }
+
+    return ;
 }

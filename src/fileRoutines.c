@@ -22,7 +22,7 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     }
 
     // now that we have the whole information about the data record we can update our header
-    head->nroPagDisco = countRecords*DATARECORDSIZE / CLUSTERSIZE;
+    head->nroPagDisco = countRecords*DATARECORDSIZE / CLUSTERSIZE + 1; // 1 from header cluster
     if(countRecords*DATARECORDSIZE % CLUSTERSIZE != 0) head->nroPagDisco++;
     //head->nroPagDisco=0;
     head->proxRRN = countRecords ;
@@ -160,6 +160,39 @@ void readFile(FILE* fp){
 
     return ;
 
+}
+// this will read a header and load it into RAM
+HEADER readHeader(FILE* fp){
+    HEADER outHeader;
+    for(int i=0;i<6;i++){
+        readHeaderField(fp,&outHeader,i); // basically reading each field
+    }
+}
+// this reads one field of the header depending on fieldFlag
+// it also sets the fp ready to later data record reading by fseeking it until the end of the cluster
+void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
+    switch(fieldFlag){
+        case 0: // status field
+            fread(&(outh->status), sizeof(char),1,fp);
+            break;
+        case 1: // topoStack fiel
+            fread(&(outh->topoStack), sizeof(int),1,fp);
+            break;
+        case 2: // proxRRN field
+            fread(&(outh->proxRRN), sizeof(int),1,fp);
+            break;
+        case 3: // nroRegRem field
+            fread(&(outh->nroRegRem),sizeof(int),1,fp);
+            break;
+        case 4: // nroPagDisco field
+            fread(&(outh->nroPagDisco),sizeof(int),1,fp);
+            break;
+        case 5: // qttCompacta field
+            fread(&(outh->qttCompacta),sizeof(int),1,fp);
+            break;
+    }
+
+    fseek(fp,CLUSTERSIZE - HEADERSIZE, SEEK_CUR); // this jumps the trash so that the readRecord that may follow can start by the data records
 }
 
 // this will read an entire data record and put it into the outData instance
@@ -308,6 +341,8 @@ void RRNread(char* filepath, int RRN){
 }
 */
 
+// this function writes the entire header record by writing it field by field 
+// and later adding the trash to make the header occupy exactly one cluster
 void writeHeaderRecord(FILE *fp, HEADER* hr){
     for(int i=0;i<6;i++){
         writeHeaderField(fp, hr, i);
@@ -324,6 +359,7 @@ void writeHeaderRecord(FILE *fp, HEADER* hr){
     fwrite(trash, trashsize * sizeof(char), 1, fp);
 }
 
+// writes one field of the header depending on fieldFlag
 void writeHeaderField(FILE *fp, HEADER* hr, int fieldFlag){
     switch(fieldFlag){
         case 0: // status field
@@ -349,6 +385,8 @@ void writeHeaderField(FILE *fp, HEADER* hr, int fieldFlag){
     return ;
 }
 
+// this writes an entire data record by writing each field
+// and adding the trash after the variable size fields
 void writeDataRecord(FILE *fp, DATARECORD* dr){
     int sizeWritten=0;
     // simply writes the 9 different field options
@@ -365,9 +403,12 @@ void writeDataRecord(FILE *fp, DATARECORD* dr){
     fwrite(trash, trashsize * sizeof(char), 1, fp); // writes the remaining trash onto the file
 }
 
+// this funciton writes a data field based on fieldFlag
+// it also returns the size that has been written so that the upper function
+// can deal with how much trash it must write
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag){
     int sizeWritten=0,i=0;
-    char delim = '|';
+    char delim = '|'; // this is set as the delimiter and will be used for both variable size fields
     switch(fieldFlag){
         case 0: // removido Field
             fwrite(&(dr->removido), sizeof(char),1, fp);
@@ -428,4 +469,80 @@ int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag){
 
     return sizeWritten;
     
+}
+
+DATARECORD searchFile(FILE* fp,char* searchedField, char* searchKey){
+    int fieldFlag;
+    fieldFlag = getFlag_fromDataField(searchedField);
+    
+    // bc we have strong types, we declare the two possible types of keys (but we will use only one)
+    int IntegerKey;
+    char StrKey[MAX_VARSTRINGSIZE];
+    int isKeyInt; // and this flag will hold wheter the key is an integer or not
+
+    switch(fieldFlag){
+        case 2: // idConecta Field
+            IntegerKey = atoi(searchKey);
+            isKeyInt = 1;
+            break;
+        case 3: // siglaPais Field
+            strcpy(StrKey,searchKey);
+            isKeyInt = 0;
+            break;
+        case 4: // idPoPsConectado Field
+            IntegerKey = atoi(searchKey);
+            isKeyInt = 1;
+            break;
+        case 5: //unidadeMedida Field
+            strcpy(StrKey,searchKey);
+            isKeyInt = 0;
+            break;
+        case 6: // velocidade Field
+            IntegerKey = atoi(searchKey);
+            isKeyInt = 1;
+            break;
+        case 7: // nomePoPs Field
+            strcpy(StrKey,searchKey);
+            isKeyInt = 0;
+            break;
+        case 8: // nomePais Field
+            strcpy(StrKey,searchKey);
+            isKeyInt = 0;
+            break;
+    }
+
+    if(isKeyInt == 1){
+        searchIntOnFile(fp, fieldFlag, IntegerKey);
+    }else{
+        searchStrOnFile(fp, fieldFlag, StrKey);
+    }
+
+}
+
+
+static int getFlag_fromDataField(char* searchedField){
+    if(strcmp(searchedField, "idConecta") == 0){
+        return 2;
+    }
+    else if(strcmp(searchedField, "siglaPais") == 0){
+        return 3;
+    }
+    else if(strcmp(searchedField, "idPoPsConectado") == 0){
+        return 4;
+    }
+    else if(strcmp(searchedField, "unidadeMedida") == 0){
+        return 5;
+    }
+    else if(strcmp(searchedField, "velocidade") == 0){
+        return 6;
+    }
+    else if(strcmp(searchedField, "nomePoPs") == 0){
+        return 7;
+    }
+    else if(strcmp(searchedField, "nomePais") == 0){
+        return 8;
+    }
+    else{
+        return -1; // ERROR flag
+    }
 }

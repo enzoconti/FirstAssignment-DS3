@@ -1,25 +1,26 @@
 #include "../include/IOFile.h"
 
 // this is a simple function to input a filepath into a dynamically allocated string and reallocate it not to waste memory
-char* inputFilepath(){
-    char* outFilepath;
-    outFilepath = malloc(100 * sizeof(char));
-    scanf("%s", outFilepath);
-    outFilepath = realloc(outFilepath, (strlen(outFilepath) + 1 ) * sizeof(char) );
+char* inputStr(){
+    char* outStr;
+    outStr = malloc(100 * sizeof(char));
+    scanf("%s", outStr);
+    outStr = realloc(outStr, (strlen(outStr) + 1 ) * sizeof(char) );
 
-    return outFilepath;
+    return outStr;
 }
 
 void printRecord(DATARECORD dr){
-    printf("removido=%d\n", dr.removido);
-    printf("encadeamento=%d\n", dr.encadeamento);
-    printf("idConecta=%d\n", dr.idConecta);
-    printf("siglaPais=%s\n", dr.siglaPais);
-    printf("idPoPsconectaco=%d\n", dr.idPoPsConectado);
-    printf("unidadeMedida=%c\n", dr.unidadeMedida);
-    printf("velocidade=%d\n", dr.velocidade);
-    printf("nomePoPs=%s\n", dr.nomePoPs);
-    printf("nomePais=%s\n\n", dr.nomePais);
+    //printf("removido=%d\n", dr.removido);
+    //printf("encadeamento=%d\n", dr.encadeamento);
+    printf("Identificador do ponto: %d\n", dr.idConecta);
+    printf("Nome do ponto: %s\n", dr.nomePoPs);
+    printf("Pais de localizacao: %s\n", dr.nomePais);
+    printf("Sigla do pais: %s\n", dr.siglaPais);
+    printf("Identificador do ponto conectado: %d\n", dr.idPoPsConectado);
+    printf("Velocidade de transmissao: %d %cbps\n", dr.velocidade,dr.unidadeMedida);
+    printf("\n");
+    
 }
 
 void printHeader(HEADER h){
@@ -33,4 +34,10 @@ void printHeader(HEADER h){
 
 void printOpenError(){
     printf("Falha no processamento do arquivo\n");
+}
+
+printSearchResult(DATARECORD dr,int searchIndex,HEADER h){
+    printf("Busca %d\n",searchIndex);
+    printRecord(dr);
+    printf("\nNumero de paginas de disco: %d\n\n",h.nroPagDisco);
 }

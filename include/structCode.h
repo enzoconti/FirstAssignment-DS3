@@ -21,6 +21,7 @@ typedef struct header{
 
 #define DATARECORDSIZE 64 // this is the fixed size of the data record
 #define MAX_VARSTRINGSIZE (64 - 21) // this is the maximum size any of the variable strings can have(without '\0');
+#define MAXDATAFIELDNAME 15 // this is the maximum name of a data field that will be used in funcitonality 3
 // creating a struct to represent the information on the data records
 typedef struct dataRecord{
     char removido;          // this fixed-size control field represents if the data record has been removed
