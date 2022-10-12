@@ -166,7 +166,7 @@ HEADER readHeader(FILE* fp){
     HEADER outHeader;
     for(int i=0;i<6;i++){
         readHeaderField(fp,&outHeader,i); // basically reading each field
-    }
+        }
 
     return outHeader;
 }
@@ -176,21 +176,28 @@ void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
     switch(fieldFlag){
         case 0: // status field
             fread(&(outh->status), sizeof(char),1,fp);
+            printf("got outh->status as %c\n", outh->status);
             break;
         case 1: // topoStack field
+            printf("outh->topoStack started as %d\n", outh->topoStack);
             fread(&(outh->topoStack), sizeof(int),1,fp);
+            printf("got outh->topoStack as %d\n",outh->topoStack);
             break;
         case 2: // proxRRN field
             fread(&(outh->proxRRN), sizeof(int),1,fp);
+            printf("got outh->proxRRN as %d\n",outh->proxRRN);
             break;
         case 3: // nroRegRem field
             fread(&(outh->nroRegRem),sizeof(int),1,fp);
+            printf("got outh->nroRegTem as %d\n", outh->nroRegRem);
             break;
         case 4: // nroPagDisco field
             fread(&(outh->nroPagDisco),sizeof(int),1,fp);
+            printf("got outh->nroPagDisco as %d\n", outh->nroPagDisco);
             break;
         case 5: // qttCompacta field
             fread(&(outh->qttCompacta),sizeof(int),1,fp);
+            printf("got outh->qttCompacta as %d\n", outh->qttCompacta);
             break;
     }
 

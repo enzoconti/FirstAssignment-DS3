@@ -57,6 +57,7 @@ void functionality3(){
     FILE* fp;
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();
+    printf("got filepath as %s\n", binFilepath);
     fp = fopen(binFilepath, "rb");
 
     // then, the input is given for the number of searches
