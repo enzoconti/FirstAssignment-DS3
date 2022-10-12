@@ -36,7 +36,7 @@ void printOpenError(){
     printf("Falha no processamento do arquivo\n");
 }
 
-printSearchResult(DATARECORD dr,int searchIndex,HEADER h){
+void printSearchResult(DATARECORD dr,int searchIndex,HEADER h){
     printf("Busca %d\n",searchIndex);
     printRecord(dr);
     printf("\nNumero de paginas de disco: %d\n\n",h.nroPagDisco);

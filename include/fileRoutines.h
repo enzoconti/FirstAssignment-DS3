@@ -23,11 +23,12 @@ void writeDataRecord(FILE *fp, DATARECORD* dr);
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag);
 HEADER readHeader(FILE* fp);
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag);
-DATARECORD searchFile(FILE* fp,char* searchedField);
+void searchFileAndPrint(FILE* fp,char* searchedField, char* searchKey);
+void searchIntOnFile(FILE* fp, int fieldFlag, int key);
+void searchStrOnFile(FILE*fp, int fieldFlag, char* key);
+int getFlag_fromDataField(char* searchedField);
 /*
 void RRNread(char* filepath, int RRN);
-void writeRecord(FILE *fp, PERSON*p);
-void writeField(FILE *fp, PERSON*p,int fieldFlag);
 */
 
 

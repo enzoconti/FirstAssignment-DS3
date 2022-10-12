@@ -167,6 +167,8 @@ HEADER readHeader(FILE* fp){
     for(int i=0;i<6;i++){
         readHeaderField(fp,&outHeader,i); // basically reading each field
     }
+
+    return outHeader;
 }
 // this reads one field of the header depending on fieldFlag
 // it also sets the fp ready to later data record reading by fseeking it until the end of the cluster
@@ -175,7 +177,7 @@ void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
         case 0: // status field
             fread(&(outh->status), sizeof(char),1,fp);
             break;
-        case 1: // topoStack fiel
+        case 1: // topoStack field
             fread(&(outh->topoStack), sizeof(int),1,fp);
             break;
         case 2: // proxRRN field
@@ -471,15 +473,19 @@ int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag){
     
 }
 
-DATARECORD searchFile(FILE* fp,char* searchedField, char* searchKey){
+void searchFileAndPrint(FILE* fp,char* searchedField, char* searchKey){
     int fieldFlag;
+    printf("calling now getFlag\n");
     fieldFlag = getFlag_fromDataField(searchedField);
+    printf("outside getFlag with fieldFlag=%d\n", fieldFlag);
     
     // bc we have strong types, we declare the two possible types of keys (but we will use only one)
     int IntegerKey;
     char StrKey[MAX_VARSTRINGSIZE];
     int isKeyInt; // and this flag will hold wheter the key is an integer or not
 
+    printf("getting inside switch case of searchFileAndPrint\n");
+    // this switch case will set the searchKey up according to its type and field
     switch(fieldFlag){
         case 2: // idConecta Field
             IntegerKey = atoi(searchKey);
@@ -511,16 +517,87 @@ DATARECORD searchFile(FILE* fp,char* searchedField, char* searchKey){
             break;
     }
 
+    printf("outside switch case with isKeyInt=%d, IntegerKey=%d and StrKey=%s\n", isKeyInt, IntegerKey, StrKey);
+    // this two subfunctions are responsible for searching the values that were set-up b4
     if(isKeyInt == 1){
+        printf("calling searchIntOnFile\n");
         searchIntOnFile(fp, fieldFlag, IntegerKey);
     }else{
+        printf("calling searchStrOnFile\n");
         searchStrOnFile(fp, fieldFlag, StrKey);
     }
 
 }
 
+void searchIntOnFile(FILE* fp, int fieldFlag, int key){
+    DATARECORD dr;
+    HEADER h;
 
-static int getFlag_fromDataField(char* searchedField){
+    h = readHeader(fp);
+
+    int i=0;
+    while( readDataRecord(fp, &dr) != 0){
+        switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
+            case 2: // idConecta field
+                if(dr.idConecta == key){
+                    printSearchResult(dr,i,h);
+                }
+                break;
+            case 4: // idPoPsConectado field
+                if(dr.idPoPsConectado == key){
+                    printSearchResult(dr,i,h);
+                }
+                break;
+            case 6: // velocidade field
+                if(dr.velocidade == key){
+                    printSearchResult(dr,i,h);
+                }
+            break;
+        }
+        i++;   
+    }
+    return ;
+}
+
+void searchStrOnFile(FILE*fp, int fieldFlag, char* key){
+    DATARECORD dr;
+    HEADER h;
+
+    h = readHeader(fp);
+    printf("header has been readen as:\n");
+    printHeader(h);
+    
+    int i=0;
+    while( readDataRecord(fp, &dr) != 0){
+        printf("%dth data record has been readen as:\n",i);
+        printRecord(dr);
+        switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
+            case 3: // siglaPais field
+                if(strcmp(dr.siglaPais,key) == 0)
+                    printSearchResult(dr,i,h);
+                break;
+            case 5: // unidadeMedida field
+                if(dr.unidadeMedida == key[0])
+                    printSearchResult(dr,i,h);
+                break;
+            case 8: // nomePoPs field
+                if(strcmp(dr.nomePoPs,key) == 0)
+                    printSearchResult(dr,i,h);
+                break;
+            case 9: // nomePais field
+                if(strcmp(dr.nomePais,key) == 0)
+                    printSearchResult(dr,i,h);
+                break;
+        }
+        i++;
+    }
+
+    return ;
+}
+
+
+
+int getFlag_fromDataField(char* searchedField){
     if(strcmp(searchedField, "idConecta") == 0){
         return 2;
     }

@@ -20,7 +20,7 @@ int main(){
             // functionality2();
             break;
         case 3:
-            // functionality3();
+             functionality3();
             break;
         case 4:
             // functionality4();

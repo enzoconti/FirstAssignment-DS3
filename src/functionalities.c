@@ -57,7 +57,7 @@ void functionality3(){
     FILE* fp;
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();
-    fp = fopen(binFilepath, 'rb');
+    fp = fopen(binFilepath, "rb");
 
     // then, the input is given for the number of searches
     int nSearches;
@@ -66,18 +66,17 @@ void functionality3(){
     // this loop will get the name of the field and then the search key
     char searchedField[MAXDATAFIELDNAME];
     char searchKey[MAX_VARSTRINGSIZE]; // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
-    DATARECORD foundRecord;
-    HEADER h;
     for(int i=0;i<nSearches;i++){
         // first the two inputs
-        fgets(searchedField,15,stdin);
+        scanf("%s", searchedField);
         scan_quote_string(searchKey);
 
-        h = readHeader(fp);
-        foundRecord = searchFile(fp,searchedField,searchKey);
-
-        printSearchResult(foundRecord,i+1,h);
+        printf("calling searchFileAndPrint with searchedField=%s and searchKey=%s\n", searchedField,searchKey);
+        searchFileAndPrint(fp,searchedField,searchKey);
     }
+
+    fclose(fp);
+    free(binFilepath);
 
     return ;
 }
