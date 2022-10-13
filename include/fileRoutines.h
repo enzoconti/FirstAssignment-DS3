@@ -23,6 +23,8 @@ void writeDataRecord(FILE *fp, DATARECORD* dr);
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag);
 HEADER readHeader(FILE* fp);
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag);
+//int readHeaderRecord(FILE *fp, HEADER* tempHeader);
+//int readHeaderField(FILE* fp, int fieldFlag, HEADER* tempHeader);
 void searchFileAndPrint(FILE* fp,char* searchedField, char* searchKey);
 void searchIntOnFile(FILE* fp, int fieldFlag, int key);
 void searchStrOnFile(FILE*fp, int fieldFlag, char* key);

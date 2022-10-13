@@ -161,6 +161,8 @@ void readFile(FILE* fp){
     return ;
 
 }
+/*----------------------------------------------------------------------------*/
+/*MEXER AQUI*/
 // this will read a header and load it into RAM
 HEADER readHeader(FILE* fp){
     HEADER outHeader;
@@ -173,36 +175,38 @@ HEADER readHeader(FILE* fp){
 // this reads one field of the header depending on fieldFlag
 // it also sets the fp ready to later data record reading by fseeking it until the end of the cluster
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
+    //verificar se encontrei o * (em cada começo de registro)
     switch(fieldFlag){
         case 0: // status field
             fread(&(outh->status), sizeof(char),1,fp);
-            printf("got outh->status as %c\n", outh->status);
+            //printf("got outh->status as %c\n", outh->status);
             break;
         case 1: // topoStack field
-            printf("outh->topoStack started as %d\n", outh->topoStack);
+            //printf("outh->topoStack started as %d\n", outh->topoStack);
             fread(&(outh->topoStack), sizeof(int),1,fp);
-            printf("got outh->topoStack as %d\n",outh->topoStack);
+            //printf("got outh->topoStack as %d\n",outh->topoStack);
             break;
         case 2: // proxRRN field
             fread(&(outh->proxRRN), sizeof(int),1,fp);
-            printf("got outh->proxRRN as %d\n",outh->proxRRN);
+            //printf("got outh->proxRRN as %d\n",outh->proxRRN);
             break;
         case 3: // nroRegRem field
             fread(&(outh->nroRegRem),sizeof(int),1,fp);
-            printf("got outh->nroRegTem as %d\n", outh->nroRegRem);
+            //printf("got outh->nroRegTem as %d\n", outh->nroRegRem);
             break;
         case 4: // nroPagDisco field
             fread(&(outh->nroPagDisco),sizeof(int),1,fp);
-            printf("got outh->nroPagDisco as %d\n", outh->nroPagDisco);
+            //printf("got outh->nroPagDisco as %d\n", outh->nroPagDisco);
             break;
         case 5: // qttCompacta field
             fread(&(outh->qttCompacta),sizeof(int),1,fp);
-            printf("got outh->qttCompacta as %d\n", outh->qttCompacta);
+            //printf("got outh->qttCompacta as %d\n", outh->qttCompacta);
             break;
     }
 
     fseek(fp,CLUSTERSIZE - HEADERSIZE, SEEK_CUR); // this jumps the trash so that the readRecord that may follow can start by the data records
 }
+/*----------------------------------------------------------------------------*/
 
 // this will read an entire data record and put it into the outData instance
 // isso lerá um registro inteiro e o colocará na instância outData
@@ -479,6 +483,82 @@ int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag){
     return sizeWritten;
     
 }
+
+/*------------X------------------------------X---------------------------------------------X---------------------------------------------------*/
+#if 0
+int readHeaderRecord(FILE *fp, HEADER* tempHeader){ //ACHO QUE ESSE ESTA PRONTO
+
+    int countFieldsSize = 0, buff=0, fieldFlag = 0; // the fieldFlag indicates which f the 5 possible fields we are reading - to know its size and where to put it onto PERSON struct
+    //o fieldFlag indica quais dos 5 campos possíveis estamos lendo - para saber seu tamanho e onde colocá-lo na estrutura PERSON
+
+    while(countFieldsSize < DATARECORDSIZE){
+        buff = readHeaderField(fp, fieldFlag, tempHeader); 
+
+        if(buff == 0){ // this indicates the file has ended
+            //isso indica que o arquivo terminou 
+            return 0;
+        }
+        else{
+            countFieldsSize+=buff; // we accumulate the non-zero buffer to know how much of the record we have already read
+        }//acumulamos o buffer diferente de zero para saber quanto do registrador já lemos
+
+        fieldFlag = (fieldFlag + 1)%5; // this makes the fieldFlag loop through 0 -> 1 -> 2 -> 3 -> ... -> 8 -> 0 ...
+        //isso faz com que o fieldFlag passe por 0 -> 1 -> 2 -> 3 -> .. -> 8 -> 0 ...
+        /*AQU EU TENHO QUE IR ATE O 5 NE?*/
+    }
+
+    return 1; // if the Record has ended and the file still not, we return 1 to indicate to readFile that it can read another record
+    //se o registro terminou e o arquivo ainda não, retornamos 1 para indicar ao readFile que ele pode ler outro registro
+
+}
+
+
+int readHeaderField(FILE* fp, int fieldFlag, HEADER* tempHeader){
+    
+    int outSizeCounter=0;
+    int nullFlag=1; // this flag will indicate when fread fails(meaning the file has ended)
+    //este sinalizador indicará quando o fread falhar (o que significa que o arquivo foi encerrado)
+    int i=0;
+    //char buffChar = 'S'; 
+
+    switch(fieldFlag){
+        case 0: //status Field
+            nullFlag = fread(&(tempHeader->status),1,1,fp);
+            outSizeCounter = 1;
+            break;
+
+        case 1: //topo Field
+            nullFlag = fread(&(tempHeader->topoStack),sizeof(int),1,fp);
+            outSizeCounter = sizeof(int);
+            break;
+
+        case 2: //proxRRN Field
+            nullFlag = fread(&(tempHeader->proxRRN),sizeof(int),1,fp);
+            outSizeCounter = sizeof(int);
+            break;
+
+        case 3: //nroRegRem Field
+            nullFlag = fread(&(tempHeader->nroRegRem),sizeof(int),1,fp);
+            //tempHeader->siglaPais[2] = '\0'; /*porque isso esta aqui???*/
+            outSizeCounter = sizeof(int);
+            break;
+
+        case 4: //nroPagDisco Field
+            nullFlag = fread(&(tempHeader->nroPagDisco),sizeof(int),1,fp);
+            outSizeCounter = sizeof(int);
+            break;
+        case 5: //qttCompacta Field
+            nullFlag = fread(&(tempHeader->qttCompacta),sizeof(char),1,fp);
+            outSizeCounter = sizeof(char);
+            break;
+    }
+
+    if(nullFlag == 0) return 0; // this indicates that the file has ended
+
+    return outSizeCounter;
+}
+# endif
+/*------------X------------------------------X---------------------------------------------X---------------------------------------------------*/
 
 void searchFileAndPrint(FILE* fp,char* searchedField, char* searchKey){
     int fieldFlag;

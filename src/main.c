@@ -17,7 +17,7 @@ int main(){
             functionality1();
             break;
         case 2:
-            // functionality2();
+             functionality2();
             break;
         case 3:
              functionality3();

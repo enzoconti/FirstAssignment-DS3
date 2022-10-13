@@ -50,7 +50,45 @@ void functionality1(){
     free(binFilepath);
 }
 
+void functionality2(){ //entrar com a struct???
+    
+    //vou printar a lista de struct aqui aaaaaa
 
+    //acho que tenho que falar qual arquivo vai aqui -.-
+
+    //calcular pagina de disco
+    
+    //fazer loop para percorrer todos coisos
+
+    printf("inside functionality 2\n");
+    HEADER h;
+    DATARECORD d;
+    //h = newHeader();
+
+    printf("succesfully created new empty header\n");
+    FILE* /*CSVfp, **/binfp;
+    char/** csvFilepath,*/ *binFilepath; // this will hold the filepaths inputted by keyboard to the corresponding files
+    
+    binFilepath = inputStr();
+
+    // openning both filepaths
+    //CSVfp = fopen(csvFilepath, "r");        // read a non-binary file
+    //if(CSVfp == NULL) {printOpenError(); return ;}
+    binfp = fopen(binFilepath, "rb"); // write onto a binary file
+    if(binfp == NULL) {printOpenError(); return ;} //CONFERIR SE EH ESSE MESMO ESSE ERRO QUE TEM QUE EXIBIR
+
+    h = readHeader(binfp);
+    readDataRecord(binfp, &d); //FILE *fp, DATARECORD* outData
+    printf("Identificador de ponto: %d\n", d.idConecta);
+    printf("Nome do ponto: %s\n",d.nomePoPs);
+    printf("Pais de localizacao: %s\n",d.nomePais);
+    printf("Sigla do pais %s\n", d.siglaPais);
+    printf("Identificador do ponto conectado: %d\n", d.idPoPsConectado);
+    printf("Velocidade de transmissao: %d %d\n", d.velocidade, d.unidadeMedida);
+
+
+    printf("Numero de paginas de disco: %c\n", h.nroPagDisco);
+}
 
 void functionality3(){
     char* binFilepath;
