@@ -21,11 +21,11 @@ void writeHeaderRecord(FILE *fp, HEADER* hr);
 void writeHeaderField(FILE *fp, HEADER* hr, int fieldFlag);
 void writeDataRecord(FILE *fp, DATARECORD* dr);
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag);
-HEADER readHeader(FILE* fp);
+void readHeader(FILE* fp, HEADER*outh);
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag);
-void searchFileAndPrint(FILE* fp,char* searchedField, char* searchKey);
-void searchIntOnFile(FILE* fp, int fieldFlag, int key);
-void searchStrOnFile(FILE*fp, int fieldFlag, char* key);
+int searchFileAndPrint(FILE* fp,int fieldFlag);
+int searchIntOnFile(FILE* fp, int fieldFlag, int key);
+int searchStrOnFile(FILE*fp, int fieldFlag, char* key);
 int getFlag_fromDataField(char* searchedField);
 /*
 void RRNread(char* filepath, int RRN);

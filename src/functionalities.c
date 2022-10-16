@@ -54,6 +54,7 @@ void functionality1(){
 
 void functionality3(){
     char* binFilepath;
+    int fieldFlag,nRecords=0,nClusters=0;
     FILE* fp;
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();
@@ -65,15 +66,17 @@ void functionality3(){
     scanf("%d", &nSearches);
 
     // this loop will get the name of the field and then the search key
-    char searchedField[MAXDATAFIELDNAME];
-    char searchKey[MAX_VARSTRINGSIZE]; // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
+    char searchedField[MAXDATAFIELDNAME];  // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
     for(int i=0;i<nSearches;i++){
-        // first the two inputs
+        printf("Busca %d:\n",i);
+        // we simply input which field will be searched as a string and transform it onto a fieldFlag
         scanf("%s", searchedField);
-        scan_quote_string(searchKey);
-
-        printf("calling searchFileAndPrint with searchedField=%s and searchKey=%s\n", searchedField,searchKey);
-        searchFileAndPrint(fp,searchedField,searchKey);
+        fieldFlag = getFlag_fromDataField(searchedField);
+        
+        nRecords = searchFileAndPrint(fp, fieldFlag);
+        nClusters = nRecords * DATARECORDSIZE / CLUSTERSIZE + 1;
+        if(nRecords *DATARECORDSIZE % CLUSTERSIZE != 0) nClusters++;
+        printf("Numero de paginas de disco: %d\n\n", nClusters);
     }
 
     fclose(fp);
