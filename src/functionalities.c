@@ -58,9 +58,7 @@ void functionality2(){ //entrar com a struct???
     HEADER h;
     int hasFound=0;
     char*binFilepath; // this will hold the filepath inputted by keyboard to the corresponding file
-    
-    binFilepath = inputStr();
-
+    binFilepath = inputStr(); //pega o nome do arquivo
     
     fp = fopen(binFilepath, "rb"); // read onto a binary file
     if(fp == NULL) {printOpenError(); return ;} 
@@ -74,6 +72,7 @@ void functionality2(){ //entrar com a struct???
     }else{
     printf("Numero de paginas de disco: %d\n", h.nroPagDisco);
     }
+
 }
 
 void functionality3(){
