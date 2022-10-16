@@ -97,7 +97,7 @@ void functionality2(){
             if(d.siglaPais[0] != '$') printf("Sigla do pais: %s\n", d.siglaPais); //sigla do pais
             if(d.idPoPsConectado != -1) printf("Identificador do ponto conectado: %d\n", d.idPoPsConectado); //identificador do ponto conectado
             //printf("Unidade de medida: %c\n", d.unidadeMedida);
-            if((d.velocidade != -1) && (d.unidadeMedida != '$')) printf("Velocidade de transmissao: %d %c\n", d.velocidade, d.unidadeMedida); //velocidade de transmicao 
+            if((d.velocidade != -1) && (d.unidadeMedida != '$')) printf("Velocidade de transmissao: %d %cbps\n", d.velocidade, d.unidadeMedida); //velocidade de transmicao 
             printf("\n");
             
             //unidadeMedida tem que ser um char
