@@ -529,7 +529,7 @@ int searchFileAndPrint(FILE* fp,int fieldFlag){
 int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     DATARECORD dr;
     HEADER h;
-    int countRecords=0;
+    int countRecords=0,hasFound=0;
 
     //printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
     readHeader(fp,&h);
@@ -543,20 +543,25 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
                 //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
                 if(dr.idConecta == key){
                     printRecord(dr);
+                    hasFound=1;
                 }
                 break;
             case 4: // idPoPsConectado field
                 if(dr.idPoPsConectado == key){
                     printRecord(dr);
+                    hasFound=1;
                 }
                 break;
             case 6: // velocidade field
                 if(dr.velocidade == key){
                     printRecord(dr);
+                    hasFound=1;
                 }
             break;
         }
     }
+
+    if(hasFound == 0) printNoRecordError();
     return countRecords;
 }
 
@@ -564,6 +569,7 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     DATARECORD dr;
     HEADER h;
     int countRecords=0;
+    int hasFound=0;
 
     readHeader(fp,&h);
     //printf("header has been readen as:\n");
@@ -578,23 +584,33 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
         //printRecord(dr);
         switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
             case 3: // siglaPais field
-                if(strcmp(dr.siglaPais,key) == 0)
+                if(strcmp(dr.siglaPais,key) == 0){
                     printRecord(dr);
+                    hasFound=1;
+                }
                 break;
             case 5: // unidadeMedida field
-                if(dr.unidadeMedida == key[0])
+                if(dr.unidadeMedida == key[0]){
                     printRecord(dr);
+                    hasFound=1;
+                }
                 break;
             case 7: // nomePoPs field
-                if(strcmp(dr.nomePoPs,key) == 0)
+                if(strcmp(dr.nomePoPs,key) == 0){
                     printRecord(dr);
+                    hasFound=1;
+                }
                 break;
             case 8: // nomePais field
-                if(strcmp(dr.nomePais,key) == 0)
+                if(strcmp(dr.nomePais,key) == 0){
                     printRecord(dr);
+                    hasFound=1;
+                }   
                 break;
         }
     }
+
+    if(hasFound == 0) printNoRecordError();
 
     return countRecords;
 }

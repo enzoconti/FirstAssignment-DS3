@@ -37,5 +37,5 @@ void printOpenError(){
 }
 
 void printNoRecordError(){
-    printf("Registro inexistente.");
+    printf("Registro inexistente.\n");
 }
