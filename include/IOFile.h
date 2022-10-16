@@ -14,6 +14,5 @@ char* inputStr();
 void printOpenError();
 void printRecord(DATARECORD dr);
 void printHeader(HEADER h);
-void printSearchResult(DATARECORD dr,int searchIndex,HEADER h);
-
+void printNoRecordError();
 #endif

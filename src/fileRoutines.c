@@ -161,6 +161,7 @@ void readFile(FILE* fp){
     return ;
 
 }
+
 // this will read a header and load it into RAM
 void readHeader(FILE* fp, HEADER* outHeader){
     for(int i=0;i<6;i++){
@@ -174,6 +175,7 @@ void readHeader(FILE* fp, HEADER* outHeader){
 // this reads one field of the header depending on fieldFlag
 // it also sets the fp ready to later data record reading by fseeking it until the end of the cluster
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
+    //verificar se encontrei o * (em cada começo de registro)
     switch(fieldFlag){
         case 0: // status field
             //printf("outh->status started as %d\n",(int) outh->status);
@@ -220,7 +222,7 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
         //printf("\n");
 
         if(buff == 0){ // this indicates the file has ended
-            //isso indica que o arrrrrrrrquivo terminou
+            //isso indica que o arquivo terminou
             return 0;
         }else{
             countFieldsSize+=buff; // we accumulate the non-zero buffer to know how much of the record we have already read
@@ -496,14 +498,13 @@ int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag){
 }
 
 int searchFileAndPrint(FILE* fp,int fieldFlag){
-    
     // bc we have strong types, we declare the two possible types of keys (but we will use only one)
     int IntegerKey;
     char StrKey[MAX_VARSTRINGSIZE];
     int isKeyInt; // and this flag will hold wheter the key is an integer or not
     int nRecords; // this will hold the number of records that were searched
 
-    printf("getting inside switch case of searchFileAndPrint\n");
+    //printf("getting inside switch case of searchFileAndPrint\n");
     // this switch case will input the right key according to the fieldFlag and set isKeyInt 
     // so that we can know the difference between the valid key that was setted and the key that only holds an old non-significant memory value
     switch(fieldFlag){
@@ -537,13 +538,13 @@ int searchFileAndPrint(FILE* fp,int fieldFlag){
             break;
     }
 
-    printf("outside switch case with isKeyInt=%d, IntegerKey=%d and StrKey=%s\n", isKeyInt, IntegerKey, StrKey);
+    //printf("outside switch case with isKeyInt=%d, IntegerKey=%d and StrKey=%s\n", isKeyInt, IntegerKey, StrKey);
     // this two subfunctions are responsible for searching the values that were set-up b4
     if(isKeyInt == 1){
-        printf("calling searchIntOnFile\n");
+        //printf("calling searchIntOnFile\n");
          nRecords = searchIntOnFile(fp, fieldFlag, IntegerKey);
     }else{
-        printf("calling searchStrOnFile\n");
+        //printf("calling searchStrOnFile\n");
         nRecords = searchStrOnFile(fp, fieldFlag, StrKey);
     }
     return nRecords;
@@ -554,7 +555,7 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     HEADER h;
     int countRecords=0;
 
-    printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
+    //printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
     readHeader(fp,&h);
 
     
@@ -591,7 +592,7 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     readHeader(fp,&h);
     //printf("header has been readen as:\n");
     //printHeader(h);
-    printf("inside searchStrOnFile with key=%s and fieldFlag=%d\n",key,fieldFlag);
+    //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
     
 
     while( readDataRecord(fp, &dr) != 0){

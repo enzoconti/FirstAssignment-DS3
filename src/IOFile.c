@@ -36,8 +36,6 @@ void printOpenError(){
     printf("Falha no processamento do arquivo\n");
 }
 
-void printSearchResult(DATARECORD dr,int searchIndex,HEADER h){
-    printf("Busca %d\n",searchIndex);
-    printRecord(dr);
-    printf("\nNumero de paginas de disco: %d\n\n",h.nroPagDisco);
+void printNoRecordError(){
+    printf("Registro inexistente.");
 }
