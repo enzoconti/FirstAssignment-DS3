@@ -12,6 +12,7 @@
 
 void readFile(FILE* fp);
 int readDataRecord(FILE *fp, DATARECORD* outData);
+//DATARECORD readDataRecord(FILE *fp/*, DATARECORD* outData*/);
 int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData);
 void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head);
 int readCSVRecord(FILE* CSVfp, DATARECORD* dr);

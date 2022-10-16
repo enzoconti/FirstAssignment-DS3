@@ -168,7 +168,8 @@ HEADER readHeader(FILE* fp){
     HEADER outHeader;
     for(int i=0;i<6;i++){
         readHeaderField(fp,&outHeader,i); // basically reading each field
-        }
+    }
+    fseek(fp,CLUSTERSIZE - HEADERSIZE, SEEK_CUR);
 
     return outHeader;
 }
@@ -182,7 +183,7 @@ void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
             //printf("got outh->status as %c\n", outh->status);
             break;
         case 1: // topoStack field
-            //printf("outh->topoStack started as %d\n", outh->topoStack);
+            printf("outh->topoStack started as %d\n", outh->topoStack);
             fread(&(outh->topoStack), sizeof(int),1,fp);
             //printf("got outh->topoStack as %d\n",outh->topoStack);
             break;
@@ -204,7 +205,7 @@ void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
             break;
     }
 
-    fseek(fp,CLUSTERSIZE - HEADERSIZE, SEEK_CUR); // this jumps the trash so that the readRecord that may follow can start by the data records
+    //fseek(fp,CLUSTERSIZE - HEADERSIZE, SEEK_CUR); // this jumps the trash so that the readRecord that may follow can start by the data records
 }
 /*----------------------------------------------------------------------------*/
 
@@ -212,17 +213,17 @@ void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
 // isso lerá um registro inteiro e o colocará na instância outData
 int readDataRecord(FILE *fp, DATARECORD* outData){
 
-    int countFieldsSize = 0, buff=0, fieldFlag = 0; // the fieldFlag indicates which f the 5 possible fields we are reading - to know its size and where to put it onto PERSON struct
-    //o fieldFlag indica quais dos 5 campos possíveis estamos lendo - para saber seu tamanho e onde colocá-lo na estrutura PERSON
+    int countFieldsSize = 0, buff=0, fieldFlag = 0; // the fieldFlag indicates which f the 9 possible fields we are reading - to know its size and where to put it onto PERSON struct
+    //o fieldFlag indica quais dos 9 campos possíveis estamos lendo - para saber seu tamanho e onde colocá-lo na estrutura PERSON
 
-    while(countFieldsSize < DATARECORDSIZE){
+    while(countFieldsSize < 9/*DATARECORDSIZE*/){
         buff = readDataField(fp, fieldFlag, outData);
 
         if(buff == 0){ // this indicates the file has ended
             //isso indica que o arquivo terminou
             return 0;
         }else{
-            countFieldsSize+=buff; // we accumulate the non-zero buffer to know how much of the record we have already read
+            countFieldsSize++;/*=buff;*/ // we accumulate the non-zero buffer to know how much of the record we have already read
         }//acumulamos o buffer diferente de zero para saber quanto do registrador já lemos
 
         fieldFlag = (fieldFlag + 1)%9; // this makes the fieldFlag loop through 0 -> 1 -> 2 -> 3 -> ... -> 8 -> 0 ...
@@ -236,45 +237,54 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
 // this function will read one of the 9 possible data fields according to the fieldFlag and puts it onto a field of outData
 int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
     
-    int outSizeCounter=0;
-    int nullFlag=1; // this flag will indicate when fread fails(meaning the file has ended)
-    int i=0;
-    char buffChar = 'S';
 
+    //int outSizeCounter = 0;
+    int nullFlag = 1; // this flag will indicate when fread fails(meaning the file has ended)
+    int i = 0;
+    char buffChar = 'S';
+    //printf("\nValos do fieldFlag %d\n\n", fieldFlag);
     switch(fieldFlag){
+
         case 0: // removido Field
             nullFlag = fread(&(outData->removido),1,1,fp);
-            outSizeCounter = 1;
+            //outSizeCounter = 1;
+            //printf("got outhData->removido as %d\n", outData->removido);
             break;
 
         case 1: // encadeamento Field
             nullFlag = fread(&(outData->encadeamento),sizeof(int),1,fp);
-            outSizeCounter = sizeof(int);
+            //outSizeCounter = sizeof(int);
+            //printf("got outhData->encadeamento as %d\n", outData->encadeamento);
             break;
 
         case 2: // idConecta Field
             nullFlag = fread(&(outData->idConecta),sizeof(int),1,fp);
-            outSizeCounter = sizeof(int);
+            //outSizeCounter = sizeof(int);
+            //printf("got outhData->idConecta as %d\n", outData->idConecta);
             break;
 
         case 3: // siglaPais Field
             nullFlag = fread(&(outData->siglaPais),2,1,fp);
             outData->siglaPais[2] = '\0';
-            outSizeCounter = 2;
+            //outSizeCounter = 2;
+            //printf("got outhData->siglaPais as %s\n", outData->siglaPais);
             break;
 
         case 4: // idPoPsConectdo Field
             nullFlag = fread(&(outData->idPoPsConectado),sizeof(int),1,fp);
-            outSizeCounter = sizeof(int);
+            //outSizeCounter = sizeof(int);
+            //printf("got outhData->idPoPsConectado as %d\n", outData->idPoPsConectado);
             break;
-        case 5: // unidade Medida Field
+        case 5: // unidadeMedida Field
             nullFlag = fread(&(outData->unidadeMedida),sizeof(char),1,fp);
-            outSizeCounter = sizeof(char);
+            //outSizeCounter = sizeof(char);
+            //printf("got outhData->unidadeMedida as %c\n", outData->unidadeMedida);
             break;
         
         case 6: // velocidade Field
-            nullFlag = fread(&(outData->idPoPsConectado),sizeof(int),1,fp);
-            outSizeCounter = sizeof(int);
+            nullFlag = fread(&(outData->velocidade),sizeof(int),1,fp);
+            //outSizeCounter = sizeof(int);
+            //printf("got outhData->velocidade as %d\n", outData->velocidade);
             break;
         
         case 7: // nomePoPs Field
@@ -290,10 +300,12 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
                 }else{
                     outData->nomePoPs[i] = '\0';
                     i++;
+                    //outSizeCounter = sizeof(buffChar);//+1?
                     break;
                 }
 
             }
+            //outSizeCounter = sizeof(buffChar);//+1?
             break;
         
         case 8: // nomePais Field
@@ -313,46 +325,17 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
                 }
 
             }
+            //printf("got outhData->nomePais as %s\n", outData->nomePais);
+            //outSizeCounter = sizeof(buffChar);
             break;
     }
+    //printf("fieldFlag: %d\n nullFlag %d\n", fieldFlag, nullFlag);
+    //printf("AAAAAAAAA %d\n", outSizeCounter);
 
     if(nullFlag == 0) return 0; // this indicates that the file has ended
 
-    return outSizeCounter;
+    return 1/*outSizeCounter*/;
 }
-
-
-// FUNCOES DO CODIGO ANTIGO ----- AINDA TEM QUE SER ADAPTADAS
-/*
-void RRNread(char* filepath, int RRN){
-    int byte_offset = RRN * DATARECORDSIZE, fseekFlag=0; // this calculates the byte_offset to find the RRNth record
-    PERSON personRecord;
-
-
-    FILE* fp = fopen(filepath, "rb"); // tries to open a binary file for read
-    if(fp == NULL){
-        printErrorFileOpening(); // print error if unsuceeded
-        //printf("Error");
-        return;
-    }
-
-    fseekFlag = fseek(fp, byte_offset, SEEK_SET); // this sets the file pointer to the desired position to read the record
-
-    if(fseekFlag != 0){
-        printErrorSeek();
-        return;
-    }
-
-    
-    readRecord(fp, &personRecord);
-
-    printPerson(personRecord);
-
-    fclose(fp);
-
-    return ;
-}
-*/
 
 // this function writes the entire header record by writing it field by field 
 // and later adding the trash to make the header occupy exactly one cluster

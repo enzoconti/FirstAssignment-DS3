@@ -50,44 +50,70 @@ void functionality1(){
     free(binFilepath);
 }
 
-void functionality2(){ //entrar com a struct???
-    
-    //vou printar a lista de struct aqui aaaaaa
+void functionality2(){
 
-    //acho que tenho que falar qual arquivo vai aqui -.-
-
-    //calcular pagina de disco
-    
-    //fazer loop para percorrer todos coisos
-
-    printf("inside functionality 2\n");
+    //printf("inside functionality 2\n");
     HEADER h;
     DATARECORD d;
     //h = newHeader();
 
-    printf("succesfully created new empty header\n");
+    //printf("succesfully created new empty header\n");
     FILE* /*CSVfp, **/binfp;
     char/** csvFilepath,*/ *binFilepath; // this will hold the filepaths inputted by keyboard to the corresponding files
     
-    binFilepath = inputStr();
+    binFilepath = inputStr(); //pega o nome do arquivo
 
-    // openning both filepaths
-    //CSVfp = fopen(csvFilepath, "r");        // read a non-binary file
-    //if(CSVfp == NULL) {printOpenError(); return ;}
     binfp = fopen(binFilepath, "rb"); // write onto a binary file
     if(binfp == NULL) {printOpenError(); return ;} //CONFERIR SE EH ESSE MESMO ESSE ERRO QUE TEM QUE EXIBIR
 
     h = readHeader(binfp);
-    readDataRecord(binfp, &d); //FILE *fp, DATARECORD* outData
-    printf("Identificador de ponto: %d\n", d.idConecta);
-    printf("Nome do ponto: %s\n",d.nomePoPs);
-    printf("Pais de localizacao: %s\n",d.nomePais);
-    printf("Sigla do pais %s\n", d.siglaPais);
-    printf("Identificador do ponto conectado: %d\n", d.idPoPsConectado);
-    printf("Velocidade de transmissao: %d %d\n", d.velocidade, d.unidadeMedida);
+    int tamArq = 960;
 
+    //fseek(binfp, 0, SEEK_END);
+    //int tamTotalArq = ftell(binfp);
+    //printf("Tamanho ftell(binfp): %d \n", tamTotalArq);
+    //int nPaginasDisco = tamTotalArq/960;
+    //printf("nPaginasDisco: %d \n", nPaginasDisco);
+    //fseek(binfp, tamArq, SEEK_SET); 
+    
+    fseek(binfp, tamArq, SEEK_SET);
+    //for(int i = 0; i < nPaginasDisco; i++){ //esse loop tem que ser arrumado para percorrer o arquivo todo
+    while(readDataRecord(binfp, &d)){
 
-    printf("Numero de paginas de disco: %c\n", h.nroPagDisco);
+        //printf("While ta rodando \n");
+        //printf("---Reotrno da função: %d\n",readDataRecord(binfp, &d));
+        fseek(binfp, tamArq, SEEK_SET);
+        if(d.removido == '0'){
+                    
+            //int a = readDataRecord(binfp, &d); 
+            //printf("\nDados \n");
+            //printf("Removido: %c\n", d.removido);
+            //printf("Encadeamento: %d\n", d.encadeamento);
+            //
+            if(d.idConecta != -1) printf("Identificador de ponto: %d\n", d.idConecta); //identificador de ponto
+            if(d.nomePoPs[0] != '\0') printf("Nome do ponto: %s\n",d.nomePoPs); //nome do ponto
+            //printf("entre d.nomePoPs e d.nomePais %d\n", d.nomePoPs[0]);
+            if(d.nomePais[0] != '\0') printf("Pais de localizacao: %s\n",d.nomePais); //pais de localizacao
+            if(d.siglaPais[0] != '$') printf("Sigla do pais: %s\n", d.siglaPais); //sigla do pais
+            if(d.idPoPsConectado != -1) printf("Identificador do ponto conectado: %d\n", d.idPoPsConectado); //identificador do ponto conectado
+            //printf("Unidade de medida: %c\n", d.unidadeMedida);
+            if((d.velocidade != -1) && (d.unidadeMedida != '$')) printf("Velocidade de transmissao: %d %c\n", d.velocidade, d.unidadeMedida); //velocidade de transmicao 
+            printf("\n");
+            
+            //unidadeMedida tem que ser um char
+        }
+        tamArq = tamArq + 64;
+    }
+    //os printf para exibir o header
+    /*printf("Status: %c\n", h.status); 
+    printf("Topo: %d\n", h.topoStack); 
+    printf("proxRRN: %d\n", h.proxRRN); 
+    printf("nroRegRem: %d\n", h.nroRegRem); 
+    printf("nroPagDisco: %d\n", h.nroPagDisco); 
+    printf("qttCompacta: %d\n", h.qttCompacta);*/  
+    
+    printf("Numero de paginas de disco: %d\n", h.nroPagDisco);
+   
 }
 
 void functionality3(){
