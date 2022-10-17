@@ -120,7 +120,7 @@ void functionality5(){
 
     filepath = inputStr();
 
-    fp = fopen(filepath,"w+b");// we need to read and then write a binary file
+    fp = fopen(filepath,"r+b");// we need to read and then write a binary file WITHOUT deleting the old records(thats why r+b and not w+b)
     if(fp == NULL) {printOpenError(); return ;} 
     scanf("%d", &n);
 

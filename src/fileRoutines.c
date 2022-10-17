@@ -25,7 +25,7 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     head->nroPagDisco = countRecords*DATARECORDSIZE / CLUSTERSIZE + 1; // 1 from header cluster
     if(countRecords*DATARECORDSIZE % CLUSTERSIZE != 0) head->nroPagDisco++;
     //head->nroPagDisco=0;
-    head->proxRRN = countRecords ;
+    head->proxRRN = countRecords;
     head->status = '1';
 
     printf("\nthe header has been set as:\n");
@@ -359,6 +359,7 @@ void writeHeaderRecord(FILE *fp, HEADER* hr){
     }
 
     fwrite(trash, trashsize * sizeof(char), 1, fp);
+    free(trash);
 }
 
 // writes one field of the header depending on fieldFlag
@@ -403,6 +404,7 @@ void writeDataRecord(FILE *fp, DATARECORD* dr){
     }
 
     fwrite(trash, trashsize * sizeof(char), 1, fp); // writes the remaining trash onto the file
+    free(trash);
 }
 
 // this funciton writes a data field based on fieldFlag
@@ -659,8 +661,8 @@ int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){
     return insertFlag;
 }
 
-void insert(FILE* fp, int endRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
-    int byteoffset = endRRN * DATARECORDSIZE + CLUSTERSIZE; // we skip the first cluster for header and sum it to the byteoffset from the data records
+void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
+    int byteoffset = addRRN * DATARECORDSIZE + CLUSTERSIZE; // we skip the first cluster for header and sum it to the byteoffset from the data records
     fseek(fp,byteoffset,SEEK_SET);
     DATARECORD removedDataRecord;
 
