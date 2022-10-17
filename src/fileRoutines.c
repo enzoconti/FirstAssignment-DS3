@@ -514,7 +514,7 @@ int searchFileAndPrint(FILE* fp,int fieldFlag){
             break;
     }
 
-    //printf("outside switch case with isKeyInt=%d, IntegerKey=%d and StrKey=%s\n", isKeyInt, IntegerKey, StrKey);
+    //printf("outsssssssside switch case with isKeyInt=%d, IntegerKey=%d and StrKey=%s\n", isKeyInt, IntegerKey, StrKey);
     // this two subfunctions are responsible for searching the values that were set-up b4
     if(isKeyInt == 1){
         //printf("calling searchIntOnFile\n");
@@ -643,3 +643,33 @@ int getFlag_fromDataField(char* searchedField){
         return -1; // ERROR flag
     }
 }
+
+int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){
+    int insertFlag;
+    
+    if(h->topoStack != -1){
+        *RRN = h->topoStack;
+        insertFlag = 1; // this flag means that there was a removed record, so, when inserting, we must put the "encadeamento" field on the topoStack
+    }
+    else{
+        *RRN = h->proxRRN;
+        insertFlag = 0; // this flag means that we will only insert on the end
+    }
+
+    return insertFlag;
+}
+
+void insert(FILE* fp, int endRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
+    int byteoffset = endRRN * DATARECORDSIZE + CLUSTERSIZE; // we skip the first cluster for header and sum it to the byteoffset from the data records
+    fseek(fp,byteoffset,SEEK_SET);
+    DATARECORD removedDataRecord;
+
+    if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack
+        readDataRecord(fp, &removedDataRecord);
+        h->topoStack = removedDataRecord.encadeamento;
+        fseek(fp,byteoffset,SEEK_SET); // back to the record to rewrite it
+    }
+
+    writeDataRecord(fp,inputDr);
+}
+

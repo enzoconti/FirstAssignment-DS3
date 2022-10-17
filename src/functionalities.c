@@ -109,3 +109,45 @@ void functionality3(){
 
     return ;
 }
+
+void functionality5(){
+    DATARECORD inputdr;
+    FILE* fp;
+    HEADER hr;
+    int n; // the number of inputted records to be added
+    char* filepath;
+    int RRN2badded, inputFlag;
+
+    filepath = inputStr();
+
+    fp = fopen(filepath,"w+b");// we need to read and then write a binary file
+    if(fp == NULL) {printOpenError(); return ;} 
+    scanf("%d", &n);
+
+    // we read the header and rewrite it to inconsistent
+    readHeader(fp, &hr);
+    hr.status = '0'; // we are modifying the header, so we put it as inconsistent and rewrite on the file
+    // rewriting the header as inconsistent
+    fseek(fp,0,SEEK_SET);
+    writeHeaderRecord(fp,&hr);
+
+    for(int i=0;i<n;i++){
+        inputDataRecord(&inputdr);
+        printRecord(inputdr);
+
+        inputFlag = getRRN4Insertion(fp,&RRN2badded,&hr);
+        
+        insert(fp,RRN2badded,&inputdr,&hr,inputFlag); // this inserts inputdr
+        
+    }
+
+    hr.status = '1';
+    fseek(fp,0,SEEK_SET);
+    writeHeaderRecord(fp,&hr);
+
+
+    fclose(fp);
+
+    binarioNaTela(filepath);
+    free(filepath);
+}

@@ -15,4 +15,6 @@ void printOpenError();
 void printRecord(DATARECORD dr);
 void printHeader(HEADER h);
 void printNoRecordError();
+void inputDataField(DATARECORD* dr, int fieldFlag);
+void inputDataRecord(DATARECORD* dr);
 #endif

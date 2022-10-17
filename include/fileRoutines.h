@@ -28,6 +28,8 @@ int searchFileAndPrint(FILE* fp,int fieldFlag);
 int searchIntOnFile(FILE* fp, int fieldFlag, int key);
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key);
 int getFlag_fromDataField(char* searchedField);
+void insert(FILE* fp, int endRRN, DATARECORD* inputDr,HEADER *h, int inputFlag);
+int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h);
 /*
 void RRNread(char* filepath, int RRN);
 */

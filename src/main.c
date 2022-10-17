@@ -26,7 +26,7 @@ int main(){
             // functionality4();
             break;
         case 5:
-            // functionality5();
+            functionality5();
             break;
         case 6:
             // functionality6();
