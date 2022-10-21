@@ -1,5 +1,7 @@
 #include "../include/fileRoutines.h"
 
+int attHeader(FILE* fp);
+
 // this function will read the CSV from CSVfp line by line creating a temporary data record on RAM to be stored on the binary file binfp
 void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     char buffTrash[LINESIZE];
@@ -175,7 +177,6 @@ void readHeader(FILE* fp, HEADER* outHeader){
 // this reads one field of the header depending on fieldFlag
 // it also sets the fp ready to later data record reading by fseeking it until the end of the cluster
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
-    //verificar se encontrei o * (em cada começo de registro)
     switch(fieldFlag){
         case 0: // status field
             //printf("outh->status started as %d\n",(int) outh->status);
@@ -474,8 +475,8 @@ int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag){
     return sizeWritten;
     
 }
-
-int searchFileAndPrint(FILE* fp,int fieldFlag){
+//UFA leio o campo identificao do que eh o dado e vejo se eh um campo de char ou int
+int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
     // bc we have strong types, we declare the two possible types of keys (but we will use only one)
     int IntegerKey;
     char StrKey[MAX_VARSTRINGSIZE];
@@ -485,13 +486,13 @@ int searchFileAndPrint(FILE* fp,int fieldFlag){
     //printf("getting inside switch case of searchFileAndPrint\n");
     // this switch case will input the right key according to the fieldFlag and set isKeyInt 
     // so that we can know the difference between the valid key that was setted and the key that only holds an old non-significant memory value
-    switch(fieldFlag){
+    switch(fieldFlag){ //esse switch case ta servindo para que eu possa pegar o nome do campo digitado
         case 2: // idConecta Field
             scanf("%d", &IntegerKey);
             isKeyInt = 1;
             break;
         case 3: // siglaPais Field
-            scan_quote_string(StrKey);
+            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
             isKeyInt = 0;
             break;
         case 4: // idPoPsConectado Field
@@ -499,35 +500,45 @@ int searchFileAndPrint(FILE* fp,int fieldFlag){
             isKeyInt = 1;
             break;
         case 5: //unidadeMedida Field
-            scan_quote_string(StrKey);
+            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
             isKeyInt = 0;
             break;
         case 6: // velocidade Field
-            scanf("%d", &IntegerKey);
+            scanf("%d", &IntegerKey); 
             isKeyInt = 1;
             break;
         case 7: // nomePoPs Field
-            scan_quote_string(StrKey);
+            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
             isKeyInt = 0;
             break;
         case 8: // nomePais Field
-            scan_quote_string(StrKey);
+            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
             isKeyInt = 0;
             break;
     }
 
     //printf("outsssssssside switch case with isKeyInt=%d, IntegerKey=%d and StrKey=%s\n", isKeyInt, IntegerKey, StrKey);
     // this two subfunctions are responsible for searching the values that were set-up b4
-    if(isKeyInt == 1){
-        //printf("calling searchIntOnFile\n");
-         nRecords = searchIntOnFile(fp, fieldFlag, IntegerKey);
+    if(func == 3){
+        if(isKeyInt == 1){
+            //printf("calling searchIntOnFile\n");
+             nRecords = searchIntOnFile(fp, fieldFlag, IntegerKey);
+        }else{
+            //printf("calling searchStrOnFile\n");
+            nRecords = searchStrOnFile(fp, fieldFlag, StrKey);
+        }
     }else{
-        //printf("calling searchStrOnFile\n");
-        nRecords = searchStrOnFile(fp, fieldFlag, StrKey);
+        if(isKeyInt == 1){
+            //printf("calling searchIntOnFile\n");
+             nRecords = removeIntOnFile(fp, fieldFlag, IntegerKey);
+        }else{
+            //printf("calling searchStrOnFile\n");
+            nRecords = removeStrOnFile(fp, fieldFlag, StrKey);
+        }
     }
     return nRecords;
 }
-
+//UFA recebe o nome do campo do dado tipo int
 int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     DATARECORD dr;
     HEADER h;
@@ -537,7 +548,7 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     readHeader(fp,&h);
 
     
-    while( readDataRecord(fp, &dr) != 0){
+    while(readDataRecord(fp, &dr) != 0){
         countRecords++;
         //printf("inside the loop of searchIntOnFile for %dth time\n",i);
         switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
@@ -567,6 +578,7 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     return countRecords;
 }
 
+//UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     DATARECORD dr;
     HEADER h;
@@ -616,7 +628,6 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
 
     return countRecords;
 }
-
 
 
 int getFlag_fromDataField(char* searchedField){
@@ -675,3 +686,137 @@ void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     writeDataRecord(fp,inputDr);
 }
 
+int removeIntOnFile(FILE* fp, int fieldFlag, int key){
+    DATARECORD dr;
+    HEADER h;
+    int countRecords=0,hasFound=0;
+
+    //printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
+    readHeader(fp,&h);
+
+    
+    while(readDataRecord(fp, &dr) != 0){
+        countRecords++;
+        //printf("inside the loop of searchIntOnFile for %dth time\n",i);
+        switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
+            case 2: // idConecta field
+                //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
+                if(dr.idConecta == key){
+                    //printRecord(dr);
+                    removeRegister(fp);
+                    hasFound=1;
+                }
+                break;
+            case 4: // idPoPsConectado field
+                if(dr.idPoPsConectado == key){
+                    //printRecord(dr);
+                    removeRegister(fp);
+                    hasFound=1;
+                }
+                break;
+            case 6: // velocidade field
+                if(dr.velocidade == key){
+                    //printRecord(dr);
+                    removeRegister(fp);
+                    hasFound=1;
+                }
+            break;
+        }
+    }
+
+    if(hasFound == 0) printNoRecordError();
+    return countRecords;
+}
+
+//UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
+int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
+    DATARECORD dr;
+    HEADER h;
+    int countRecords=0;
+    int hasFound=0;
+
+    readHeader(fp,&h);
+    //printf("header has been readen as:\n");
+    //printHeader(h);
+    //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
+    
+
+    while( readDataRecord(fp, &dr) != 0){
+        countRecords++;
+        //printf("inside loop of searchStrOnFile for %dth time",i);
+        //printf("%dth data record has been readen as:\n",i);
+        //printRecord(dr);
+        switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
+            case 3: // siglaPais field
+                if(strcmp(dr.siglaPais,key) == 0){
+                    //printRecord(dr);
+                    removeRegister(fp);
+                    hasFound=1;
+                }
+                break;
+            case 5: // unidadeMedida field
+                if(dr.unidadeMedida == key[0]){
+                    //printRecord(dr);
+                    removeRegister(fp);
+                    hasFound=1;
+                }
+                break;
+            case 7: // nomePoPs field
+                if(strcmp(dr.nomePoPs,key) == 0){
+                    //printRecord(dr);
+                    removeRegister(fp);
+                    hasFound=1;
+                }
+                break;
+            case 8: // nomePais field
+                if(strcmp(dr.nomePais,key) == 0){
+                    //printRecord(dr);
+                    removeRegister(fp);
+                    hasFound=1;
+                }   
+                break;
+        }
+    }
+
+    if(hasFound == 0) printNoRecordError();
+
+    return countRecords;
+}
+
+void removeRegister(FILE *fp){ 
+    //vou remover direto dentro do arquivo
+    fseek(fp, -64, SEEK_CUR);
+
+    //UFA atualizar o header aqui!
+
+    const char* lixo = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"; 
+    char removido = '1';
+    int encadeamento = attHeader(fp); //UFA mexer melhor aqui!
+    fwrite(&removido, 1,1, fp);
+    fwrite(&encadeamento, sizeof(int),1, fp);
+    //for(int i = 0; i < 64, i++){
+    fwrite(lixo, 1, 59, fp);
+    //}
+}
+
+HEADER updateHeader(FILE *fp, HEADER he){
+    static HEADER newHeader;
+    
+
+
+
+    return newHeader;
+}
+
+int attHeader(FILE* fp){
+    int seekAtual = ftell(fp);
+    fseek(fp, 1, SEEK_SET);
+    //(proxRRN * TAM_REGITRO + T_CABEÇALHO)
+    int contaa =  (seekAtual - 960)/64;
+    int aqui;
+    fread(&aqui, sizeof(int),1, fp);
+    fseek(fp, 1, SEEK_SET);
+    fwrite(&contaa, sizeof(int), 1, fp);
+    fseek(fp, seekAtual, SEEK_SET);
+    return aqui;    
+}

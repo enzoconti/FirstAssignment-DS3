@@ -23,7 +23,7 @@ int main(){
              functionality3();
             break;
         case 4:
-            // functionality4();
+            functionality4();
             break;
         case 5:
             functionality5();

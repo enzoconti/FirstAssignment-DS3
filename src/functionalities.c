@@ -50,9 +50,7 @@ void functionality1(){
     free(binFilepath);
 }
 
-void functionality2(){ //entrar com a struct???
-    
-    
+void functionality2(){
     FILE*fp;
     DATARECORD dr;
     HEADER h;
@@ -72,7 +70,6 @@ void functionality2(){ //entrar com a struct???
     }else{
     printf("Numero de paginas de disco: %d\n", h.nroPagDisco);
     }
-
 }
 
 void functionality3(){
@@ -98,13 +95,50 @@ void functionality3(){
         scanf("%s", searchedField);
         fieldFlag = getFlag_fromDataField(searchedField);
         
-        nRecords = searchFileAndPrint(fp, fieldFlag);
+        nRecords = searchFileAndPrint(fp, fieldFlag, 3);
         nClusters = nRecords * DATARECORDSIZE / CLUSTERSIZE + 1;
         if(nRecords *DATARECORDSIZE % CLUSTERSIZE != 0) nClusters++;
         printf("Numero de paginas de disco: %d\n\n", nClusters);
     }
 
     fclose(fp);
+    free(binFilepath);
+
+    return ;
+}
+
+void functionality4(){
+    HEADER headerHeader; 
+    char* binFilepath;
+    int fieldFlag;
+    int removeRecords = 0;
+    FILE* fp;
+    // firstly, the input is given for filepath and the file is opened
+    binFilepath = inputStr();
+    //printf("got filepath as %s\n", binFilepath);
+    fp = fopen(binFilepath, "rb+");
+    if(fp == NULL) {printOpenError(); return ;} 
+    readHeader(fp, &headerHeader);
+
+    // then, the input is given for the number of searches
+    int nSearches;
+    scanf("%d", &nSearches);
+
+    // this loop will get the name of the field and then the search key
+    char searchedField[MAXDATAFIELDNAME];  // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
+    for(int i=0;i<nSearches;i++){
+        if(i != 0) fseek(fp,0,SEEK_SET); // if it is not the first search we shall reset the file pointer to start
+        // we simply input which field will be searched as a string and transform it onto a fieldFlag
+        scanf("%s", searchedField);
+        fieldFlag = getFlag_fromDataField(searchedField);
+        
+        removeRecords += searchFileAndPrint(fp, fieldFlag, 4);
+    }
+
+    
+    
+    fclose(fp);
+    binarioNaTela(binFilepath);
     free(binFilepath);
 
     return ;

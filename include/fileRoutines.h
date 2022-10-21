@@ -24,7 +24,7 @@ void writeDataRecord(FILE *fp, DATARECORD* dr);
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag);
 void readHeader(FILE* fp, HEADER*outh);
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag);
-int searchFileAndPrint(FILE* fp,int fieldFlag);
+int searchFileAndPrint(FILE* fp,int fieldFlag,int func);
 int searchIntOnFile(FILE* fp, int fieldFlag, int key);
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key);
 int getFlag_fromDataField(char* searchedField);
@@ -34,5 +34,8 @@ int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h);
 void RRNread(char* filepath, int RRN);
 */
 
+int removeIntOnFile(FILE* fp, int fieldFlag, int key);
+int removeStrOnFile(FILE*fp, int fieldFlag, char* key);
+void removeRegister(FILE *fp);
 
 #endif
