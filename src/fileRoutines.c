@@ -69,6 +69,10 @@ int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
         i++;
     }
     buffStr[i] = '\0';
+
+    // there is a special case in which the last or first characters are whitespaces
+    // so we need a function to eliminate them
+    strcpy(buffStr,removeSpaces(buffStr));
     
     // this switch case puts the read value onto the right field
     // there are some ifs that check if the buffStr has only '\0'
@@ -906,4 +910,39 @@ void compact(FILE *fp){
 
     }
 
+}
+
+char* removeSpaces(char* originalStr){
+    //printf("removeSpaces called with str=%s\n", originalStr);
+    int firstChar=0, lastChar=strlen(originalStr);
+    //printf("firstChar started as %d and lastchar as %d\n",firstChar,lastChar);
+    char *newStr;
+    //printf("going to allocate newStr\n");
+    newStr = malloc(MAX_VARSTRINGSIZE * sizeof(char));
+    //printf("newStr allocated\n");
+
+    for(int i=0;i<strlen(originalStr);i++){
+        if(!isspace(originalStr[i])){
+            firstChar = i; // this gets the firstChar that is not space
+            break;
+        }
+    }
+    //printf("outside 1st loop\n");
+
+    for(int j=strlen(originalStr)-1;j>=0;j--){
+        if(!isspace(originalStr[j])){
+            lastChar = j; // this gets the last character that is not space
+            break;
+        }
+    }
+    //printf("outside 2nd loop\n");
+
+    //printf("firstChar gotten as %d and lastchar as %d\n",firstChar,lastChar);
+    for(int i=firstChar;i<=lastChar;i++){
+        newStr[i-firstChar] = originalStr[i]; // this copies everything between the removed spaces onto a new string that is returned
+    }   
+    //printf("outside 3rd loop\n");
+
+    //printf("removeSpaces returning with str=START%sEND\n", newStr);
+    return newStr;
 }
