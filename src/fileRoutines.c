@@ -17,8 +17,8 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
         tempData.encadeamento = -1;
 
         // with the temporary data record set-up, we write it onto the binary file
-        printf("\ngoing into writeDataRecord with the record set as:\n");
-        printRecord(tempData);
+        //printf("\ngoing into writeDataRecord with the record set as:\n");
+        //printRecord(tempData);
         writeDataRecord(binfp, &tempData);
         countRecords++;
     }
@@ -30,8 +30,8 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     head->proxRRN = countRecords;
     head->status = '1';
 
-    printf("\nthe header has been set as:\n");
-    printHeader(*head);
+    //printf("\nthe header has been set as:\n");
+    //printHeader(*head);
 }
 
 int readCSVRecord(FILE* CSVfp, DATARECORD* dr){
@@ -541,11 +541,9 @@ int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
 //UFA recebe o nome do campo do dado tipo int
 int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     DATARECORD dr;
-    HEADER h;
     int countRecords=0,hasFound=0;
 
     //printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
-    readHeader(fp,&h);
 
     
     while(readDataRecord(fp, &dr) != 0){
@@ -581,11 +579,9 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
 //UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     DATARECORD dr;
-    HEADER h;
     int countRecords=0;
     int hasFound=0;
 
-    readHeader(fp,&h);
     //printf("header has been readen as:\n");
     //printHeader(h);
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));

@@ -2,41 +2,41 @@
 
 // this is the main funciton for functionality 1, which is based on CREATE TABLE from SQL
 void functionality1(){
-    printf("inside functionality 1\n");
+    //printf("inside functionality 1\n");
     HEADER h;
     h = newHeader();
-    printf("succesfully created new empty header\n");
+    //printf("succesfully created new empty header\n");
     FILE* CSVfp, *binfp;
     char* csvFilepath, *binFilepath; // this will hold the filepaths inputted by keyboard to the corresponding files
-    printf("inputting filepaths\n");
+    //printf("inputting filepaths\n");
     csvFilepath = inputStr();
-    printf("got the csv filepath as:%s\n", csvFilepath);
+    //printf("got the csv filepath as:%s\n", csvFilepath);
 
     binFilepath = inputStr();
-    printf("got the bin filepath as:%s\n", binFilepath);
+    //printf("got the bin filepath as:%s\n", binFilepath);
 
     // openning both filepaths
     CSVfp = fopen(csvFilepath, "r");        // read a non-binary file
     if(CSVfp == NULL) {printOpenError(); return ;}
     binfp = fopen(binFilepath, "wb"); // write onto a binary file
     if(binfp == NULL) {printOpenError(); return ;}
-    printf("both files opened ok\n");
+    //printf("both files opened ok\n");
 
     h.status = '0'; // we set the header status as inconsistent now that the binary file is opened
-    printf("writing initial header\n");
+    //printf("writing initial header\n");
     writeHeaderRecord(binfp,&h); //  we write the initial header, that has nothing but the flag for inconsistency
-    printf("initial header written ok\n");
+    //printf("initial header written ok\n");
 
-    printf("calling readCSV_writeBin now\n");
+    //printf("calling readCSV_writeBin now\n");
     // this larger function will input the CSV line, decompose it into the right struct fields and write the data records (updating the header while it does so)
     readCSV_writeBin(CSVfp, binfp, &h);
-    printf("readCSV_writeBin has gone out ok\n");
+    //printf("readCSV_writeBin has gone out ok\n");
 
     // fseek to the beginning of the file to write the updated header
-    printf("going to fseek to write the header now\n");
+    //printf("going to fseek to write the header now\n");
     fseek(binfp,0,SEEK_SET);
     writeHeaderRecord(binfp,&h);
-    printf("written header ok, closing files\n");
+    //printf("written header ok, closing files\n");
 
     // closing the files
     fclose(CSVfp); // WHY THIS FCLOSE DOES NOT WORK????????????????????????
@@ -55,27 +55,35 @@ void functionality2(){
     DATARECORD dr;
     HEADER h;
     int hasFound=0;
+    int countCluters=0;
     char*binFilepath; // this will hold the filepath inputted by keyboard to the corresponding file
     binFilepath = inputStr(); //pega o nome do arquivo
     
     fp = fopen(binFilepath, "rb"); // read onto a binary file
     if(fp == NULL) {printOpenError(); return ;} 
     readHeader(fp, &h);
+    if(h.status == '0') {printOpenError(); return ;}
     while(readDataRecord(fp,&dr) != 0){
         hasFound = 1;
         printRecord(dr);
     }
     if(hasFound == 0){
         printNoRecordError();
+        countCluters = 1; // only the header has been readen
     }else{
-    printf("Numero de paginas de disco: %d\n", h.nroPagDisco);
+        countCluters = h.nroPagDisco;
     }
+    printf("Numero de paginas de disco: %d\n\n", countCluters);
+
+    fclose(fp);
+    free(binFilepath);
 }
 
 void functionality3(){
     char* binFilepath;
     int fieldFlag,nRecords=0,nClusters=0;
     FILE* fp;
+    HEADER h;   
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();
     //printf("got filepath as %s\n", binFilepath);
@@ -86,11 +94,14 @@ void functionality3(){
     int nSearches;
     scanf("%d", &nSearches);
 
+    readHeader(fp,&h);
+    if(h.status == '0') {printOpenError(); return;}
+
     // this loop will get the name of the field and then the search key
     char searchedField[MAXDATAFIELDNAME];  // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
     for(int i=0;i<nSearches;i++){
         if(i != 0) fseek(fp,0,SEEK_SET); // if it is not the first search we shall reset the file pointer to start
-        printf("Busca %d:\n",i+1);
+        printf("Busca %d\n",i+1);
         // we simply input which field will be searched as a string and transform it onto a fieldFlag
         scanf("%s", searchedField);
         fieldFlag = getFlag_fromDataField(searchedField);
@@ -122,6 +133,7 @@ void functionality4(){
      
     //aqui a ideia eh ele o header inicial
     readHeader(fp, &headerHeader);
+    if(headerHeader.status == '0') {printOpenError(); return ;}
 
     // then, the input is given for the number of searches
     int nSearches;
@@ -163,6 +175,7 @@ void functionality5(){
 
     // we read the header and rewrite it to inconsistent
     readHeader(fp, &hr);
+    if(hr.status == '0') {printOpenError(); return ;} // if it is already inconsistent there is an error
     hr.status = '0'; // we are modifying the header, so we put it as inconsistent and rewrite on the file
     // rewriting the header as inconsistent
     fseek(fp,0,SEEK_SET);
@@ -170,7 +183,7 @@ void functionality5(){
 
     for(int i=0;i<n;i++){
         inputDataRecord(&inputdr);
-        printRecord(inputdr);
+        //printRecord(inputdr);
 
         inputFlag = getRRN4Insertion(fp,&RRN2badded,&hr);
         
@@ -184,7 +197,6 @@ void functionality5(){
 
 
     fclose(fp);
-
     binarioNaTela(filepath);
     free(filepath);
 }
@@ -206,6 +218,7 @@ void functionality6(){
     }
 
     readHeader(fp, &headerHeader);
+    if(headerHeader.status == '0') {printOpenError(); return ;}
     //int i;
     //for(i = 0; i < headerHeader.nroRegRem; i++){
         compact(fp);
