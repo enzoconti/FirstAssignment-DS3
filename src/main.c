@@ -29,7 +29,7 @@ int main(){
             functionality5();
             break;
         case 6:
-            // functionality6();
+             functionality6();
             break;
     }
 

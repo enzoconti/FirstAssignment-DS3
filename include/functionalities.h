@@ -21,4 +21,6 @@ void functionality4();
 // this will be the main function for functionality 5 - that inputs a data record from keyboard and inserts onto a binary file
 void functionality5();
 
+void functionality6();
+
 #endif

@@ -109,6 +109,7 @@ void functionality3(){
 
 void functionality4(){
     HEADER headerHeader; 
+
     char* binFilepath;
     int fieldFlag;
     int removeRecords = 0;
@@ -117,7 +118,9 @@ void functionality4(){
     binFilepath = inputStr();
     //printf("got filepath as %s\n", binFilepath);
     fp = fopen(binFilepath, "rb+");
-    if(fp == NULL) {printOpenError(); return ;} 
+    if(fp == NULL) {printOpenError(); return ;}
+     
+    //aqui a ideia eh ele o header inicial
     readHeader(fp, &headerHeader);
 
     // then, the input is given for the number of searches
@@ -135,8 +138,8 @@ void functionality4(){
         removeRecords += searchFileAndPrint(fp, fieldFlag, 4);
     }
 
-    
-    
+
+
     fclose(fp);
     binarioNaTela(binFilepath);
     free(binFilepath);
@@ -184,4 +187,33 @@ void functionality5(){
 
     binarioNaTela(filepath);
     free(filepath);
+}
+
+void functionality6(){
+    HEADER headerHeader; 
+
+    char* binFilepath;
+    //int fieldFlag;
+    //int removeRecords = 0; //UFA talvez eu não use
+    FILE* fp;
+    // firstly, the input is given for filepath and the file is opened
+    binFilepath = inputStr();
+    //printf("got filepath as %s\n", binFilepath);
+    fp = fopen(binFilepath, "rb+");
+    if(fp == NULL) {
+        printOpenError(); 
+        return ;
+    }
+
+    readHeader(fp, &headerHeader);
+    //int i;
+    //for(i = 0; i < headerHeader.nroRegRem; i++){
+        compact(fp);
+    //}
+
+    fclose(fp);
+    //binarioNaTela(binFilepath);
+    free(binFilepath);
+
+    return ;
 }
