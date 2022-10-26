@@ -686,10 +686,10 @@ void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack, in the case that we insert on a removed spot and not on end
         readDataRecord(fp, &removedDataRecord);
         h->topoStack = removedDataRecord.encadeamento;
+        h->nroRegRem--; // descrease the number of removed records
         fseek(fp,byteoffset,SEEK_SET); // back to the record to rewrite it
     }else{
         h->proxRRN++; // if we add to the end we need to count this RRN on proxRRN
-        h->nroRegRem--; // descrease the number of removed records
     }
 
     writeDataRecord(fp,inputDr);
