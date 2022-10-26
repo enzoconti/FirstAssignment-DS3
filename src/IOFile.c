@@ -55,7 +55,9 @@ void inputDataRecord(DATARECORD* dr){
 
 void inputDataField(DATARECORD* dr, int fieldFlag){
     char buffStr[MAX_VARSTRINGSIZE];
-    scan_quote_string(buffStr);  
+    //printf("inside inputDataField with fieldFlag=%d\n", fieldFlag);
+    scan_quote_string(buffStr);
+    //printf("got scanquotestring=$%s$\n",buffStr);  
 
     // this switch case puts the buffStr to it corresponding field
     // in each one, there is an if to make the right empty case of each field

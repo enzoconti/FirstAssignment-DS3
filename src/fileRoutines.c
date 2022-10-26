@@ -222,6 +222,12 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
 
     while(countFieldsSize < DATARECORDSIZE){
         buff = readDataField(fp, fieldFlag, outData);
+        if(fieldFlag == 1){
+            if(outData->removido == '1'){
+                fseek(fp,DATARECORDSIZE - countFieldsSize,SEEK_CUR);
+                return 1;
+            }
+        }
         //printf("inside the loop of readDataRecord, got buff=%d for fieldFlag=%d\n",buff,fieldFlag);
         //printf("data record currently as:\n\n");
         //printRecord(*outData);
@@ -677,10 +683,13 @@ void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     fseek(fp,byteoffset,SEEK_SET);
     DATARECORD removedDataRecord;
 
-    if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack
+    if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack, in the case that we insert on a removed spot and not on end
         readDataRecord(fp, &removedDataRecord);
         h->topoStack = removedDataRecord.encadeamento;
         fseek(fp,byteoffset,SEEK_SET); // back to the record to rewrite it
+    }else{
+        h->proxRRN++; // if we add to the end we need to count this RRN on proxRRN
+        h->nroRegRem--; // descrease the number of removed records
     }
 
     writeDataRecord(fp,inputDr);

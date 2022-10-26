@@ -62,10 +62,13 @@ void functionality2(){
     fp = fopen(binFilepath, "rb"); // read onto a binary file
     if(fp == NULL) {printOpenError(); return ;} 
     readHeader(fp, &h);
+    //printHeader(h);
     if(h.status == '0') {printOpenError(); return ;}
     while(readDataRecord(fp,&dr) != 0){
-        hasFound = 1;
-        printRecord(dr);
+        if(dr.removido == '0'){
+            hasFound = 1;
+            printRecord(dr);
+        }
     }
     if(hasFound == 0){
         printNoRecordError();
