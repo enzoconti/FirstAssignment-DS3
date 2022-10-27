@@ -983,6 +983,7 @@ void compact(FILE *fp, int numRemovidos){ //UFA o numRemovidos esta no header, q
 
 }
 
+//UFA ????????????????????
 char* removeSpaces(char* originalStr){
     //printf("removeSpaces called with str=%s\n", originalStr);
     int firstChar=0, lastChar=strlen(originalStr);
