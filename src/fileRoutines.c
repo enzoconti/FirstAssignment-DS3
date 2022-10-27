@@ -128,7 +128,7 @@ int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
     return 1;
 }
 
-int isValid(FILE *fp,char c){
+int isValid(FILE *fp,char c){ //UFA o que essa funcao faz???
     char nextChar;
     if(c == '\n' || c == ','){
         return 0;
@@ -630,7 +630,7 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
 }
 
 
-int getFlag_fromDataField(char* searchedField){
+int getFlag_fromDataField(char* searchedField){ //UFA o que essa funcao faz???
     if(strcmp(searchedField, "idConecta") == 0){
         return 2;
     }
@@ -657,7 +657,7 @@ int getFlag_fromDataField(char* searchedField){
     }
 }
 
-int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){
+int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){ //UFA o que essa funcao faz???
     int insertFlag;
     
     if(h->topoStack != -1){
@@ -686,16 +686,18 @@ void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     writeDataRecord(fp,inputDr);
 }
 
+//this function removes the fields identified as of type int
 int removeIntOnFile(FILE* fp, int fieldFlag, int key){
-    DATARECORD dr;
-    HEADER h;
-    int countRecords=0,hasFound=0;
+    DATARECORD dr; //struct destined to receive the record to be removed
+    HEADER h; //struct intended to read the header
+    int countRecords=0; //is a variable that counts how many times the loop ran
+    int hasFound=0; //is a variable that counts how many times a record has been removed
 
     //printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
-    readHeader(fp,&h);
+    readHeader(fp,&h); //header reading
 
     
-    while(readDataRecord(fp, &dr) != 0){
+    while(readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
         countRecords++;
         //printf("inside the loop of searchIntOnFile for %dth time\n",i);
         switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
@@ -724,24 +726,25 @@ int removeIntOnFile(FILE* fp, int fieldFlag, int key){
         }
     }
 
-    if(hasFound == 0) printNoRecordError();
-    return countRecords;
+    if(hasFound == 0) printNoRecordError(); //UFA (conferir) if no records were removed, that means no records were found, so I return an error
+    return countRecords; //UFA, isso retorna a quantidade de vezes que o loop foi percorrido, mas não faz muito sentido....
 }
 
 //UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
+//this function removes the fields identified as of type char (string)
 int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
-    DATARECORD dr;
-    HEADER h;
-    int countRecords=0;
-    int hasFound=0;
+    DATARECORD dr;  //struct destined to receive the record to be removed
+    HEADER h;  //struct intended to read the header
+    int countRecords=0; //is a variable that counts how many times the loop ran
+    int hasFound=0; //is a variable that counts how many times a record has been
 
-    readHeader(fp,&h);
+    readHeader(fp,&h); //header reading //UFA
     //printf("header has been readen as:\n");
     //printHeader(h);
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
     
 
-    while( readDataRecord(fp, &dr) != 0){
+    while( readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
         countRecords++;
         //printf("inside loop of searchStrOnFile for %dth time",i);
         //printf("%dth data record has been readen as:\n",i);
@@ -783,19 +786,19 @@ int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
     return countRecords;
 }
 
-void removeRegister(FILE *fp){ 
-    //vou remover direto dentro do arquivo
-    fseek(fp, -64, SEEK_CUR);
+//this function actually removes the registry after it is found
+void removeRegister(FILE *fp){
+    fseek(fp, -64, SEEK_CUR); //UFA EU ACHO QUE ISSO ESTÁ ERRADO //here I'm taking my current position that I'm in the file and going back 64 bytes to get to the beginning of the record
 
     //UFA atualizar o header aqui!
 
-    const char* lixo = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"; 
-    char removido = '1';
+    const char* lixo = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"; //will be used to fill the entire registry space
+    char removido = '1'; //will be used to change the header
     int encadeamento = attHeader(fp); //UFA mexer melhor aqui!
-    fwrite(&removido, 1,1, fp);
-    fwrite(&encadeamento, sizeof(int),1, fp);
+    fwrite(&removido, 1,1, fp); // UFA aqui eu to add o removido no cabeçalho meio que a força MELHORAR ISSO AQUI
+    fwrite(&encadeamento, sizeof(int),1, fp); // UFA aqui eu to add o encadeamento no cabeçalho meio que a força MELHORAR ISSO AQUI
     //for(int i = 0; i < 64, i++){
-    fwrite(lixo, 1, 59, fp);
+    fwrite(lixo, 1, 59, fp); //here the record you want to remove is being filled by $
     //}
 }
 
@@ -815,6 +818,7 @@ HEADER updateHeader(FILE *fp, HEADER *he){
     return newHeader;
 }
 
+//UFA TEM QUE FAZER ESSA FUNÇÃO DIREITO SOCORRO AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 int attHeader(FILE* fp){
     int seekAtual = ftell(fp);
     fseek(fp, 1, SEEK_SET);
@@ -828,14 +832,26 @@ int attHeader(FILE* fp){
     return aqui;    
 }
 
-void compact(FILE *fp){
+/*int*/void quantidadeRegistros(FILE *fp){
+    DATARECORD registro;
+    int contador = 0;
+    while(readDataRecord(fp, &registro) != 0){
+        contador++;
+    }
+    printf("Contador: %d\n", contador);
+    //return contador;
+}
+
+//UFA ESSA MERDA TA UM GRANDE CAOS, PQP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void compact(FILE *fp, int numRemovidos){ //UFA o numRemovidos esta no header, que é uma coisa que eu tenho que arrumar
     DATARECORD achaRemovido;
     //DATARECORD achaProximoRegistro;
     //HEADER cabecalho;
     int countRecords=0;
     //int hasFound=0;
-    int lugarRemovido = 0;
-    char auxiliaRemovido;
+    int lugarRemovido[numRemovidos-1];
+    //char auxiliaRemovido;
+
     printf("Entrou na função compact\n");
     //será que no header tem a quantidade de registros removidos???
     //primeiro eu confiro se tem registro removido
@@ -844,9 +860,12 @@ void compact(FILE *fp){
     //para compacar, eu tenho que fazer tudo no mesmo arquivo
     //para isso eu vou precisar usar um struct auxiliar
     //usar um ponteiro para arquivo auxiliar também????
+    int i;
     while(readDataRecord(fp, &achaRemovido) != 0){ //UFA e se eu usar o fread aqui?
+        //eu acho que não to percorrendo todo o arquivo, to parando quando eu acho o removido
         countRecords ++;
-        printf("Entrou no primeiro while da função compact\n");
+        printf("Entrou no primeiro while da função compact %d \n", countRecords);
+        //UFA para printar, ver de usar uma função que eu acho que tem em algum lugar aqui 
         /*printf("1 %d \n",achaRemovido.removido);
         printf("1 %d \n",achaRemovido.encadeamento);
         printf("1 %d \n",achaRemovido.idConecta);
@@ -867,22 +886,33 @@ void compact(FILE *fp){
             printf("%d \n",achaRemovido.velocidade);
             printf("%s \n",achaRemovido.nomePoPs);
             printf("%s \n",achaRemovido.nomePais);*/
+            //int i; 
+            //UFA isso pode dar merdaaaaaaaa
+            //for(i = 0; i = (numRemovidos-1); i++){
+            lugarRemovido[i] = countRecords; 
+            printf("lugarRemovido i: %d %d \n", lugarRemovido[i],i);
+            i++;
+            //}
+                
+            //fseek(fp, (lugarRemovido * 64) + 64, SEEK_SET);
+            //fread(&auxiliaRemovido, sizeof(char), 1, fp); //UFA esse 1 pode dar merda...
+            //fseek(fp, (SEEK_CUR - 64), SEEK_SET);
+            //arrumar aqui para que o cursor volte para continuar lendo as coisas
+        } 
 
-            lugarRemovido = countRecords;
-            printf("lugarRemovido: %d \n", lugarRemovido);
-        } //UFA fim do if(achaRemovido.removido == '1')
-        fseek(fp, (lugarRemovido * 64) + 64, SEEK_SET);
-        fread(&auxiliaRemovido, sizeof(char), 1, fp); //UFA esse 1 pode dar merda...
-        if(auxiliaRemovido == '1'){
+        //UFA fim do if(achaRemovido.removido == '1')
+        //fseek(fp, (lugarRemovido * 64) + 64, SEEK_SET);
+        //fread(&auxiliaRemovido, sizeof(char), 1, fp); //UFA esse 1 pode dar merda...
+        /*if(auxiliaRemovido == '1'){
             printf("dois registros seguidos removidos\n");
             //ai eu tenho que ver se o proximo também foi removido 
             //eu posso fazer um loop pra isso, porque ai caso o proximo
             //nao seja removido, ele vai ser armazenado na struct
-        }
-        else{
-            printf("O proximo registro nao foi removido\n");
-            writeDataRecord(fp, &achaRemovido);
-            printf("%d \n",achaRemovido.removido);
+        }*/
+        //else{
+            //printf("O proximo registro nao foi removido\n");
+            //writeDataRecord(fp, &achaRemovido);
+            /*printf("%s \n",achaRemovido.removido);
             printf("%d \n",achaRemovido.encadeamento);
             printf("%d \n",achaRemovido.idConecta);
             printf("%s \n",achaRemovido.siglaPais);
@@ -890,8 +920,40 @@ void compact(FILE *fp){
             //printf("%s \n",achaRemovido.unidadeMedida);
             printf("%d \n",achaRemovido.velocidade);
             printf("%s \n",achaRemovido.nomePoPs);
-            printf("%s \n",achaRemovido.nomePais);
-        }
+            printf("%s \n",achaRemovido.nomePais);*/
+            
+            //fseek(fp, (lugarRemovido * 64), SEEK_SET);
+            //writeDataRecord(fp, &achaRemovido);
+            /*DATARECORD teste, olhar;
+
+            teste = achaRemovido;
+            //readDataRecord(fp, &teste);
+            printf("teste %d \n",teste.removido);
+            printf("teste %d \n",teste.encadeamento);
+            printf("teste %d \n",teste.idConecta);
+            printf("teste %s \n",teste.siglaPais);
+            printf("teste %d \n",teste.idPoPsConectado);
+            //printf("%s \n",achaRemovido.unidadeMedida);
+            printf("teste %d \n",teste.velocidade);
+            printf("teste %s \n",teste.nomePoPs);
+            printf("teste %s \n",teste.nomePais);*/
+
+            /*fseek(fp, (lugarRemovido * 64), SEEK_SET);
+            writeDataRecord(fp, &teste);
+            fseek(fp, (lugarRemovido * 64), SEEK_SET);
+            readDataRecord(fp, &olhar);
+            printf("olhar %d \n",olhar.removido);
+            printf("olhar %d \n",olhar.encadeamento);
+            printf("olhar %d \n",olhar.idConecta);
+            printf("olhar %s \n",olhar.siglaPais);
+            printf("olhar %d \n",olhar.idPoPsConectado);
+            //printf("%s \n",achaRemovido.unidadeMedida);
+            printf("olhar %d \n",olhar.velocidade);
+            printf("olhar %s \n",olhar.nomePoPs);
+            printf("olhar %s \n",olhar.nomePais);*/
+
+
+        //}
             //aqui eu tenho que fazer um loop para achar o proximo registro?
             //eu tenho que salvar aqui o lugar no arquivo em que o arquivo esta
             //usar o coiso de RRN????

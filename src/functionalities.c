@@ -208,7 +208,8 @@ void functionality6(){
     readHeader(fp, &headerHeader);
     //int i;
     //for(i = 0; i < headerHeader.nroRegRem; i++){
-        compact(fp);
+        quantidadeRegistros(fp);
+        //compact(fp, 1);
     //}
 
     fclose(fp);
