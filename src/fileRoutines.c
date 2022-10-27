@@ -159,7 +159,7 @@ void readFile(FILE* fp){
 
     // readHeader(fp, &tempHeader); // AINDA FALTA IMPLEMENTAR
 
-    while( readDataRecord(fp, &tempData) != 0){ // this reads a Record from fp and puts its data into tempData
+    while(readDataRecord(fp, &tempData) != 0){ // this reads a Record from fp and puts its data into tempData
         // printData(tempData);     // AINDA FALTA IMPLEMENTAR      
         countRecords++;
     }
@@ -607,7 +607,7 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
     
 
-    while( readDataRecord(fp, &dr) != 0){
+    while(readDataRecord(fp, &dr) != 0){
         countRecords++;
         //printf("inside loop of searchStrOnFile for %dth time",i);
         //printf("%dth data record has been readen as:\n",i);
@@ -850,147 +850,52 @@ int attHeader(FILE* fp){
     fseek(fp, seekAtual, SEEK_SET);
     return aqui;    
 }
-
-/*int*/void quantidadeRegistros(FILE *fp){
+//UFA ISSO EH UM TESTE 
+int/*void*/ quantidadeRegistros(FILE *fp){
     DATARECORD registro;
     int contador = 0;
     while(readDataRecord(fp, &registro) != 0){
         contador++;
     }
-    printf("Contador: %d\n", contador);
-    //return contador;
+    //printf("Contador: %d\n", contador);
+    return contador;
 }
 
 //UFA ESSA MERDA TA UM GRANDE CAOS, PQP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void compact(FILE *fp, int numRemovidos){ //UFA o numRemovidos esta no header, que é uma coisa que eu tenho que arrumar
+    //UFA - ABRIR O ARQUIVO AI...
     DATARECORD achaRemovido;
-    //DATARECORD achaProximoRegistro;
-    //HEADER cabecalho;
+    HEADER cabecalho;
+
     int countRecords=0;
-    //int hasFound=0;
-    int lugarRemovido[numRemovidos-1];
-    //char auxiliaRemovido;
+    FILE*auxCompact;
+    int contadorRegistros = quantidadeRegistros(fp);
+    //printf("Contador: %d\n", contadorRegistros);
+    auxCompact = fopen("arqCompact.bin", "rb+");
 
-    printf("Entrou na função compact\n");
-    //será que no header tem a quantidade de registros removidos???
-    //primeiro eu confiro se tem registro removido
-    //se tiver eu começo a compactar
-    //caso nao eu devo colocar o erro eu acho
-    //para compacar, eu tenho que fazer tudo no mesmo arquivo
-    //para isso eu vou precisar usar um struct auxiliar
-    //usar um ponteiro para arquivo auxiliar também????
-    int i;
-    while(readDataRecord(fp, &achaRemovido) != 0){ //UFA e se eu usar o fread aqui?
-        //eu acho que não to percorrendo todo o arquivo, to parando quando eu acho o removido
+    readHeader(fp, &cabecalho);
+
+    cabecalho.qttCompacta=cabecalho.qttCompacta+1;
+    writeHeaderRecord(auxCompact, &cabecalho);
+
+    //printf("Entrou na função compact\n");
+    fseek(fp,960,SEEK_SET);
+    fseek(auxCompact,960,SEEK_SET);
+    while(contadorRegistros != 0){    
         countRecords ++;
-        printf("Entrou no primeiro while da função compact %d \n", countRecords);
-        //UFA para printar, ver de usar uma função que eu acho que tem em algum lugar aqui 
-        /*printf("1 %d \n",achaRemovido.removido);
-        printf("1 %d \n",achaRemovido.encadeamento);
-        printf("1 %d \n",achaRemovido.idConecta);
-        printf("1 %s \n",achaRemovido.siglaPais);
-        printf("1 %d \n",achaRemovido.idPoPsConectado);
-        //printf("%s \n",achaRemovido.unidadeMedida);
-        printf("1 %d \n",achaRemovido.velocidade);
-        printf("1 %s \n",achaRemovido.nomePoPs);
-        printf("1 %s \n",achaRemovido.nomePais);*/
-        if(achaRemovido.removido == '1'){ //UFA se for igual a 1 é porque o registro foi removido
-            printf("Achei o removido\n");
-            /*printf("%d \n",achaRemovido.removido);
-            printf("%d \n",achaRemovido.encadeamento);
-            printf("%d \n",achaRemovido.idConecta);
-            printf("%s \n",achaRemovido.siglaPais);
-            printf("%d \n",achaRemovido.idPoPsConectado);
-            //printf("%s \n",achaRemovido.unidadeMedida);
-            printf("%d \n",achaRemovido.velocidade);
-            printf("%s \n",achaRemovido.nomePoPs);
-            printf("%s \n",achaRemovido.nomePais);*/
-            //int i; 
-            //UFA isso pode dar merdaaaaaaaa
-            //for(i = 0; i = (numRemovidos-1); i++){
-            lugarRemovido[i] = countRecords; 
-            printf("lugarRemovido i: %d %d \n", lugarRemovido[i],i);
-            i++;
-            //}
-                
-            //fseek(fp, (lugarRemovido * 64) + 64, SEEK_SET);
-            //fread(&auxiliaRemovido, sizeof(char), 1, fp); //UFA esse 1 pode dar merda...
-            //fseek(fp, (SEEK_CUR - 64), SEEK_SET);
-            //arrumar aqui para que o cursor volte para continuar lendo as coisas
+        //printf("Entrou no primeiro while da função compact %d \n", countRecords);
+        readDataRecord(fp, &achaRemovido);
+        //printf("achaRemovido.removido %c \n",achaRemovido.removido);
+        //printf("achaRemovido.encadeamento %d \n",achaRemovido.encadeamento);
+        //printf("achaRemovido.idConecta %d \n",achaRemovido.idConecta);
+        //printf("achaRemovido.siglaPais %s \n",achaRemovido.siglaPais);
+        
+        if(achaRemovido.removido == '0'){ //UFA se for igual a 1 é porque o registro foi removido
+            //printf("ADICIONEI NO ARQUIVO\n\n");
+            writeDataRecord(auxCompact, &achaRemovido);
         } 
-
-        //UFA fim do if(achaRemovido.removido == '1')
-        //fseek(fp, (lugarRemovido * 64) + 64, SEEK_SET);
-        //fread(&auxiliaRemovido, sizeof(char), 1, fp); //UFA esse 1 pode dar merda...
-        /*if(auxiliaRemovido == '1'){
-            printf("dois registros seguidos removidos\n");
-            //ai eu tenho que ver se o proximo também foi removido 
-            //eu posso fazer um loop pra isso, porque ai caso o proximo
-            //nao seja removido, ele vai ser armazenado na struct
-        }*/
-        //else{
-            //printf("O proximo registro nao foi removido\n");
-            //writeDataRecord(fp, &achaRemovido);
-            /*printf("%s \n",achaRemovido.removido);
-            printf("%d \n",achaRemovido.encadeamento);
-            printf("%d \n",achaRemovido.idConecta);
-            printf("%s \n",achaRemovido.siglaPais);
-            printf("%d \n",achaRemovido.idPoPsConectado);
-            //printf("%s \n",achaRemovido.unidadeMedida);
-            printf("%d \n",achaRemovido.velocidade);
-            printf("%s \n",achaRemovido.nomePoPs);
-            printf("%s \n",achaRemovido.nomePais);*/
-            
-            //fseek(fp, (lugarRemovido * 64), SEEK_SET);
-            //writeDataRecord(fp, &achaRemovido);
-            /*DATARECORD teste, olhar;
-
-            teste = achaRemovido;
-            //readDataRecord(fp, &teste);
-            printf("teste %d \n",teste.removido);
-            printf("teste %d \n",teste.encadeamento);
-            printf("teste %d \n",teste.idConecta);
-            printf("teste %s \n",teste.siglaPais);
-            printf("teste %d \n",teste.idPoPsConectado);
-            //printf("%s \n",achaRemovido.unidadeMedida);
-            printf("teste %d \n",teste.velocidade);
-            printf("teste %s \n",teste.nomePoPs);
-            printf("teste %s \n",teste.nomePais);*/
-
-            /*fseek(fp, (lugarRemovido * 64), SEEK_SET);
-            writeDataRecord(fp, &teste);
-            fseek(fp, (lugarRemovido * 64), SEEK_SET);
-            readDataRecord(fp, &olhar);
-            printf("olhar %d \n",olhar.removido);
-            printf("olhar %d \n",olhar.encadeamento);
-            printf("olhar %d \n",olhar.idConecta);
-            printf("olhar %s \n",olhar.siglaPais);
-            printf("olhar %d \n",olhar.idPoPsConectado);
-            //printf("%s \n",achaRemovido.unidadeMedida);
-            printf("olhar %d \n",olhar.velocidade);
-            printf("olhar %s \n",olhar.nomePoPs);
-            printf("olhar %s \n",olhar.nomePais);*/
-
-
-        //}
-            //aqui eu tenho que fazer um loop para achar o proximo registro?
-            //eu tenho que salvar aqui o lugar no arquivo em que o arquivo esta
-            //usar o coiso de RRN????
-            //while(readDataRecord(fp, &achaProximoRegistro) != 0){
-                //printf("Entrou no primeiro while da função compact\n");
-                //if(achaProximoRegistro.removido == '0'){
-                    //printf("Achei o proximo\n");
-                    //aqui eu posso usar pra sair do loop e add os dados da struct ontem esta removido
-                    //break;
-                //}
-            //}
-            //aqui eu tenho que pegar o lugar do registro removido e sobreescrever com a minha struct
-            //fseek(fp, (lugarRemovido * 64), SEEK_SET);
-            //writeDataRecord(fp, &achaProximoRegistro);
-        //}
-
+    contadorRegistros--;
     }
-
 }
 
 //UFA ????????????????????

@@ -40,6 +40,6 @@ int removeIntOnFile(FILE* fp, int fieldFlag, int key);
 int removeStrOnFile(FILE*fp, int fieldFlag, char* key);
 void removeRegister(FILE *fp);
 void compact(FILE *fp, int numRemovidos);
-/*int*/void quantidadeRegistros(FILE *fp);
+int/*void*/ quantidadeRegistros(FILE *fp);
 
 #endif
