@@ -63,7 +63,7 @@ void scan_quote_string(char *str) {
 	*
 	*/
 
-	char R;
+	char R, myChar; // myChar foi criada pelo aluno para analisar um caso especial nao previsto na funcao que foi fornecida
 
 	while((R = getchar()) != EOF && isspace(R)); // ignorar espaços, \r, \n...
 
@@ -77,7 +77,15 @@ void scan_quote_string(char *str) {
 		getchar(); // ignorar aspas fechando
 	} else if(R != EOF){ // vc tá tentando ler uma string que não tá entre aspas! Fazer leitura normal %s então, pois deve ser algum inteiro ou algo assim...
 		str[0] = R;
-		scanf("%s", &str[1]);
+		// CASO ESPECIAL QUE O CODIGO ORIGINAL NAO TRATAVA: se for um numero so de um digito ele pega um \n e outro numero aqui
+		// entao se o prox for \n significa que o numero era de apenas um digito
+		myChar = getchar();
+		if(isspace(myChar)){
+			str[1] = (char) 0; // era apenas um digito, coloca o \0 na string 
+		}else{
+			ungetc(myChar,stdin); // nao era apenas um digito, entao coloca ele na segunda posicao e scanf string pro resto
+			scanf("%s", &str[1]); 
+		}
 	} else { // EOF
 		strcpy(str, "");
 	}

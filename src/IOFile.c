@@ -13,12 +13,12 @@ char* inputStr(){
 void printRecord(DATARECORD dr){
     //printf("removido=%d\n", dr.removido);
     //printf("encadeamento=%d\n", dr.encadeamento);
-    printf("Identificador do ponto: %d\n", dr.idConecta);
-    printf("Nome do ponto: %s\n", dr.nomePoPs);
-    printf("Pais de localizacao: %s\n", dr.nomePais);
-    printf("Sigla do pais: %s\n", dr.siglaPais);
-    printf("Identificador do ponto conectado: %d\n", dr.idPoPsConectado);
-    printf("Velocidade de transmissao: %d %cbps\n", dr.velocidade,dr.unidadeMedida);
+    if(dr.idConecta != -1) printf("Identificador do ponto: %d\n", dr.idConecta);
+    if(strlen(dr.nomePoPs) != 0) printf("Nome do ponto: %s\n", dr.nomePoPs);
+    if(strlen(dr.nomePais) != 0) printf("Pais de localizacao: %s\n", dr.nomePais);
+    if(dr.siglaPais[0] != '$')printf("Sigla do pais: %s\n", dr.siglaPais);
+    if(dr.idPoPsConectado != -1) printf("Identificador do ponto conectado: %d\n", dr.idPoPsConectado);
+    if(dr.velocidade != -1) printf("Velocidade de transmissao: %d %cbps\n", dr.velocidade,dr.unidadeMedida);
     printf("\n");
     
 }
@@ -33,11 +33,11 @@ void printHeader(HEADER h){
 }
 
 void printOpenError(){
-    printf("Falha no processamento do arquivo\n");
+    printf("Falha no processamento do arquivo.\n");
 }
 
 void printNoRecordError(){
-    printf("Registro inexistente.\n");
+    printf("Registro inexistente.\n\n");
 }
 
 void inputDataRecord(DATARECORD* dr){
@@ -55,7 +55,9 @@ void inputDataRecord(DATARECORD* dr){
 
 void inputDataField(DATARECORD* dr, int fieldFlag){
     char buffStr[MAX_VARSTRINGSIZE];
-    scan_quote_string(buffStr);  
+    //printf("inside inputDataField with fieldFlag=%d\n", fieldFlag);
+    scan_quote_string(buffStr);
+    //printf("got scanquotestring=$%s$\n",buffStr);  
 
     // this switch case puts the buffStr to it corresponding field
     // in each one, there is an if to make the right empty case of each field

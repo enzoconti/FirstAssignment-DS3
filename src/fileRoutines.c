@@ -17,8 +17,8 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
         tempData.encadeamento = -1;
 
         // with the temporary data record set-up, we write it onto the binary file
-        printf("\ngoing into writeDataRecord with the record set as:\n");
-        printRecord(tempData);
+        //printf("\ngoing into writeDataRecord with the record set as:\n");
+        //printRecord(tempData);
         writeDataRecord(binfp, &tempData);
         countRecords++;
     }
@@ -30,8 +30,8 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     head->proxRRN = countRecords;
     head->status = '1';
 
-    printf("\nthe header has been set as:\n");
-    printHeader(*head);
+    //printf("\nthe header has been set as:\n");
+    //printHeader(*head);
 }
 
 int readCSVRecord(FILE* CSVfp, DATARECORD* dr){
@@ -69,6 +69,10 @@ int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
         i++;
     }
     buffStr[i] = '\0';
+
+    // there is a special case in which the last or first characters are whitespaces
+    // so we need a function to eliminate them
+    strcpy(buffStr,removeSpaces(buffStr));
     
     // this switch case puts the read value onto the right field
     // there are some ifs that check if the buffStr has only '\0'
@@ -218,6 +222,12 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
 
     while(countFieldsSize < DATARECORDSIZE){
         buff = readDataField(fp, fieldFlag, outData);
+        if(fieldFlag == 1){
+            if(outData->removido == '1'){
+                fseek(fp,DATARECORDSIZE - countFieldsSize,SEEK_CUR);
+                return 1;
+            }
+        }
         //printf("inside the loop of readDataRecord, got buff=%d for fieldFlag=%d\n",buff,fieldFlag);
         //printf("data record currently as:\n\n");
         //printRecord(*outData);
@@ -541,11 +551,9 @@ int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
 //UFA recebe o nome do campo do dado tipo int
 int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     DATARECORD dr;
-    HEADER h;
     int countRecords=0,hasFound=0;
 
     //printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
-    readHeader(fp,&h);
 
     
     while(readDataRecord(fp, &dr) != 0){
@@ -581,11 +589,9 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
 //UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     DATARECORD dr;
-    HEADER h;
     int countRecords=0;
     int hasFound=0;
 
-    readHeader(fp,&h);
     //printf("header has been readen as:\n");
     //printHeader(h);
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
@@ -677,10 +683,13 @@ void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     fseek(fp,byteoffset,SEEK_SET);
     DATARECORD removedDataRecord;
 
-    if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack
+    if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack, in the case that we insert on a removed spot and not on end
         readDataRecord(fp, &removedDataRecord);
         h->topoStack = removedDataRecord.encadeamento;
+        h->nroRegRem--; // descrease the number of removed records
         fseek(fp,byteoffset,SEEK_SET); // back to the record to rewrite it
+    }else{
+        h->proxRRN++; // if we add to the end we need to count this RRN on proxRRN
     }
 
     writeDataRecord(fp,inputDr);
@@ -972,4 +981,39 @@ void compact(FILE *fp, int numRemovidos){ //UFA o numRemovidos esta no header, q
 
     }
 
+}
+
+char* removeSpaces(char* originalStr){
+    //printf("removeSpaces called with str=%s\n", originalStr);
+    int firstChar=0, lastChar=strlen(originalStr);
+    //printf("firstChar started as %d and lastchar as %d\n",firstChar,lastChar);
+    char *newStr;
+    //printf("going to allocate newStr\n");
+    newStr = malloc(MAX_VARSTRINGSIZE * sizeof(char));
+    //printf("newStr allocated\n");
+
+    for(int i=0;i<strlen(originalStr);i++){
+        if(!isspace(originalStr[i])){
+            firstChar = i; // this gets the firstChar that is not space
+            break;
+        }
+    }
+    //printf("outside 1st loop\n");
+
+    for(int j=strlen(originalStr)-1;j>=0;j--){
+        if(!isspace(originalStr[j])){
+            lastChar = j; // this gets the last character that is not space
+            break;
+        }
+    }
+    //printf("outside 2nd loop\n");
+
+    //printf("firstChar gotten as %d and lastchar as %d\n",firstChar,lastChar);
+    for(int i=firstChar;i<=lastChar;i++){
+        newStr[i-firstChar] = originalStr[i]; // this copies everything between the removed spaces onto a new string that is returned
+    }   
+    //printf("outside 3rd loop\n");
+
+    //printf("removeSpaces returning with str=START%sEND\n", newStr);
+    return newStr;
 }
