@@ -221,13 +221,17 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
 
 
     while(countFieldsSize < DATARECORDSIZE){
-        buff = readDataField(fp, fieldFlag, outData);
-        if(fieldFlag == 1){
+        // tentei fazer isso pra nao ler tudo mas ele precisa ler o encadeamento, entao nao posso pular direto
+        // senao da errado nas insercoes. se por acaso der problema reimplemento pra ler depois do segundo, mas sem ele parece funcionar
+        /*if(fieldFlag == 1){ // on the second iteration we check if the previous one read that the record is removed, if it is we stop reading
             if(outData->removido == '1'){
                 fseek(fp,DATARECORDSIZE - countFieldsSize,SEEK_CUR);
                 return 1;
             }
-        }
+        }*/
+
+        
+        buff = readDataField(fp, fieldFlag, outData);
         //printf("inside the loop of readDataRecord, got buff=%d for fieldFlag=%d\n",buff,fieldFlag);
         //printf("data record currently as:\n\n");
         //printRecord(*outData);
@@ -280,7 +284,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
             break;
 
         case 3: // siglaPais Field
-            nullFlag = fread(&(outData->siglaPais),2,1,fp);
+            nullFlag = fread(&(outData->siglaPais),2*sizeof(char),1,fp);
             outData->siglaPais[2] = '\0';
             outSizeCounter = 2;
             //printf("got outhData->siglaPais as %s\n", outData->siglaPais);
@@ -311,8 +315,11 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
                 outSizeCounter++;
                 //printf("with i=%d got buffChar=%c and nullFlag=%d\n",i,buffChar,nullFlag);
             
-
-                if(buffChar != '|'){
+                if(i >= MAX_VARSTRINGSIZE){
+                    outData->nomePoPs[MAX_VARSTRINGSIZE-1] = '\0';
+                    break;
+                }
+                else if(buffChar != '|'){
                     outData->nomePoPs[i] = buffChar;
                     i++;
                 }else{
@@ -333,8 +340,11 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
                 if(nullFlag == 0) break;
                 outSizeCounter++;
             
-
-                if(buffChar != '|'){
+                if(i >= MAX_VARSTRINGSIZE){
+                    outData->nomePais[MAX_VARSTRINGSIZE-1] = '\0';
+                    break;
+                }
+                else if(buffChar != '|'){
                     outData->nomePais[i] = buffChar;
                     i++;
                 }else{

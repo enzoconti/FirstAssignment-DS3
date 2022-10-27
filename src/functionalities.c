@@ -65,6 +65,8 @@ void functionality2(){
     //printHeader(h);
     if(h.status == '0') {printOpenError(); return ;}
     while(readDataRecord(fp,&dr) != 0){
+        //printf("has readen the first dataRecord as:\n");
+        //printRecord(dr);
         if(dr.removido == '0'){
             hasFound = 1;
             printRecord(dr);

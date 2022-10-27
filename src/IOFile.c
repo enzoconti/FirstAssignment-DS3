@@ -11,7 +11,7 @@ char* inputStr(){
 }
 
 void printRecord(DATARECORD dr){
-    //printf("removido=%d\n", dr.removido);
+    //printf("removido=%c\n", dr.removido);
     //printf("encadeamento=%d\n", dr.encadeamento);
     if(dr.idConecta != -1) printf("Identificador do ponto: %d\n", dr.idConecta);
     if(strlen(dr.nomePoPs) != 0) printf("Nome do ponto: %s\n", dr.nomePoPs);
@@ -73,7 +73,9 @@ void inputDataField(DATARECORD* dr, int fieldFlag){
             if(strcmp(buffStr,"") == 0){
                 strcpy(dr->siglaPais,"$$");
             }else{
-                strcpy(dr->siglaPais,buffStr);
+                dr->siglaPais[0] = buffStr[0];
+                dr->siglaPais[1] = buffStr[1];
+                dr->siglaPais[2] = '\0';
             }
             break;
         case 4: // idPoPsConectado Field
