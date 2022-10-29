@@ -38,9 +38,15 @@ void RRNread(char* filepath, int RRN);
 
 int removeIntOnFile(FILE* fp, int fieldFlag, int key);
 int removeStrOnFile(FILE*fp, int fieldFlag, char* key);
+<<<<<<< HEAD
 void removeRegister(FILE *fp, int count);
 void updateHeader(FILE *fp, int count);
 void compact(FILE *fp, int numRemovidos);
 int/*void*/ quantidadeRegistros(FILE *fp);
+=======
+void removeRegister(FILE *fp);
+void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader);
+// int/*void*/ quantidadeRegistros(FILE *fp);
+>>>>>>> 922392d17b08b169700114f8d5580c32ff9cba5f
 
 #endif

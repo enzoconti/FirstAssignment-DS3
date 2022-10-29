@@ -24,8 +24,7 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     }
 
     // now that we have the whole information about the data record we can update our header
-    head->nroPagDisco = countRecords*DATARECORDSIZE / CLUSTERSIZE + 1; // 1 from header cluster
-    if(countRecords*DATARECORDSIZE % CLUSTERSIZE != 0) head->nroPagDisco++;
+    head->nroPagDisco = calculateNroPagDisco(countRecords);
     //head->nroPagDisco=0;
     head->proxRRN = countRecords;
     head->status = '1';
@@ -877,9 +876,14 @@ void updateHeader(FILE *fp, int count){
     fwrite(&contaa, sizeof(int), 1, fp);
     fseek(fp, seekAtual, SEEK_SET);
     return aqui;    
+<<<<<<< HEAD
 }*/
+=======
+}
+/*
+>>>>>>> 922392d17b08b169700114f8d5580c32ff9cba5f
 //UFA ISSO EH UM TESTE 
-int/*void*/ quantidadeRegistros(FILE *fp){
+int void quantidadeRegistros(FILE *fp){
     DATARECORD registro;
     int contador = 0;
     while(readDataRecord(fp, &registro) != 0){
@@ -888,42 +892,37 @@ int/*void*/ quantidadeRegistros(FILE *fp){
     //printf("Contador: %d\n", contador);
     return contador;
 }
+*/
 
 //UFA ESSA MERDA TA UM GRANDE CAOS, PQP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void compact(FILE *fp, int numRemovidos){ //UFA o numRemovidos esta no header, que é uma coisa que eu tenho que arrumar
+void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ //UFA o numRemovidos esta no header, que é uma coisa que eu tenho que arrumar
     //UFA - ABRIR O ARQUIVO AI...
-    DATARECORD achaRemovido;
-    HEADER cabecalho;
+    DATARECORD tempData;
+    HEADER newH;
 
     int countRecords=0;
-    FILE*auxCompact;
-    int contadorRegistros = quantidadeRegistros(fp);
-    //printf("Contador: %d\n", contadorRegistros);
-    auxCompact = fopen("arqCompact.bin", "rb+");
 
-    readHeader(fp, &cabecalho);
-
-    cabecalho.qttCompacta=cabecalho.qttCompacta+1;
-    writeHeaderRecord(auxCompact, &cabecalho);
-
-    //printf("Entrou na função compact\n");
-    fseek(fp,960,SEEK_SET);
-    fseek(auxCompact,960,SEEK_SET);
-    while(contadorRegistros != 0){    
-        countRecords ++;
-        //printf("Entrou no primeiro while da função compact %d \n", countRecords);
-        readDataRecord(fp, &achaRemovido);
-        //printf("achaRemovido.removido %c \n",achaRemovido.removido);
-        //printf("achaRemovido.encadeamento %d \n",achaRemovido.encadeamento);
-        //printf("achaRemovido.idConecta %d \n",achaRemovido.idConecta);
-        //printf("achaRemovido.siglaPais %s \n",achaRemovido.siglaPais);
-        
-        if(achaRemovido.removido == '0'){ //UFA se for igual a 1 é porque o registro foi removido
-            //printf("ADICIONEI NO ARQUIVO\n\n");
-            writeDataRecord(auxCompact, &achaRemovido);
-        } 
-    contadorRegistros--;
+    // we skip the header of auxCompact bc we dont have all information about it
+    fseek(auxCompact,CLUSTERSIZE,SEEK_SET); 
+    while(readDataRecord(OriginalFp,&tempData) != 0){
+        if(tempData.removido == '0'){ // if it is not removed we rewrite on auxCompact
+            countRecords++;
+            writeDataRecord(auxCompact,&tempData);
+        }
     }
+
+    newH.status = '1';
+    newH.topoStack = -1;
+    newH.nroRegRem = 0;
+    newH.nroPagDisco = calculateNroPagDisco(countRecords);
+    newH.proxRRN = countRecords;
+    newH.qttCompacta = currentHeader->qttCompacta+1;
+
+    fseek(auxCompact,0,SEEK_SET);
+    writeHeaderRecord(auxCompact,&newH);
+
+    return;
+    
 }
 
 // this function removes spaces from start and end of a string

@@ -223,7 +223,7 @@ void functionality6(){
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();
     //printf("got filepath as %s\n", binFilepath);
-    fp = fopen(binFilepath, "rb+");
+    fp = fopen(binFilepath, "rb");
     if(fp == NULL) {
         printOpenError(); 
         return ;
@@ -234,11 +234,19 @@ void functionality6(){
     //int i;
     //for(i = 0; i < headerHeader.nroRegRem; i++){
         //quantidadeRegistros(fp);
-        compact(fp, 2);
-    //}
+
+    FILE*auxCompact;
+    auxCompact = fopen("AUX.bin", "wb"); // we will only write on the new file
+
+    compact(fp, auxCompact,&headerHeader);
 
     fclose(fp);
-    //binarioNaTela(binFilepath);
+    fclose(auxCompact);
+
+    remove(binFilepath);
+    rename("AUX.bin",binFilepath);
+
+    binarioNaTela(binFilepath);
     free(binFilepath);
 
     return ;

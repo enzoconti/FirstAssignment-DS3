@@ -12,3 +12,11 @@ HEADER newHeader(){
 
    return h;
 }
+
+int calculateNroPagDisco(int countRecords){
+   int nroPagDisco=0;
+   nroPagDisco = (countRecords * DATARECORDSIZE) / CLUSTERSIZE + 1;
+   if((countRecords * DATARECORDSIZE) % CLUSTERSIZE != 0) nroPagDisco++;
+
+   return nroPagDisco;
+}
