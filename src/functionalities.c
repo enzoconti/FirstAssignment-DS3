@@ -155,7 +155,14 @@ void functionality4(){
         removeRecords += searchFileAndPrint(fp, fieldFlag, 4);
     }
 
-    printf("removeRecords %d\n", removeRecords);
+    //printf("removeRecords %d\n", removeRecords);
+    /*fseek(fp, 0, SEEK_SET);
+    readHeader(fp, &headerHeader);
+    printf("headerHeader.topoStack %d\n", headerHeader.topoStack);
+    printf("headerHeader.proxRRN %d\n", headerHeader.proxRRN);
+    printf("headerHeader.nroRegRem %d\n", headerHeader.nroRegRem);*/
+
+
 
     fclose(fp);
     binarioNaTela(binFilepath);
