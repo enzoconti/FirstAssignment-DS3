@@ -226,7 +226,8 @@ void functionality6(){
     if(headerHeader.status == '0') {printOpenError(); return ;}
     //int i;
     //for(i = 0; i < headerHeader.nroRegRem; i++){
-        compact(fp);
+        //quantidadeRegistros(fp);
+        compact(fp, 2);
     //}
 
     fclose(fp);
