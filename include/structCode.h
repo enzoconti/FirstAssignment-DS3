@@ -36,5 +36,7 @@ typedef struct dataRecord{
 }DATARECORD;
 
 HEADER newHeader();
+int calculateNroPagDisco(int countRecords);
+
 
 #endif
