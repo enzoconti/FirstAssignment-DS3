@@ -38,7 +38,7 @@ void RRNread(char* filepath, int RRN);
 
 int removeIntOnFile(FILE* fp, int fieldFlag, int key);
 int removeStrOnFile(FILE*fp, int fieldFlag, char* key);
-void removeRegister(FILE *fp);
+void removeRegister(FILE *fp, int count);
 void compact(FILE *fp, int numRemovidos);
 int/*void*/ quantidadeRegistros(FILE *fp);
 
