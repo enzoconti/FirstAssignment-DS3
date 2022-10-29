@@ -155,7 +155,7 @@ void functionality4(){
         removeRecords += searchFileAndPrint(fp, fieldFlag, 4);
     }
 
-
+    printf("removeRecords %d\n", removeRecords);
 
     fclose(fp);
     binarioNaTela(binFilepath);

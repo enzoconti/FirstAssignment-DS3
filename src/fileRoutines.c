@@ -724,21 +724,21 @@ int removeIntOnFile(FILE* fp, int fieldFlag, int key){
                 //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
                 if(dr.idConecta == key){
                     //printRecord(dr);
-                    removeRegister(fp);
+                    removeRegister(fp, countRecords);
                     hasFound=1;
                 }
                 break;
             case 4: // idPoPsConectado field
                 if(dr.idPoPsConectado == key){
                     //printRecord(dr);
-                    removeRegister(fp);
+                    removeRegister(fp, countRecords);
                     hasFound=1;
                 }
                 break;
             case 6: // velocidade field
                 if(dr.velocidade == key){
                     //printRecord(dr);
-                    removeRegister(fp);
+                    removeRegister(fp, countRecords);
                     hasFound=1;
                 }
             break;
@@ -761,39 +761,39 @@ int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
     //printf("header has been readen as:\n");
     //printHeader(h);
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
-    
+    //writeDataRecord(fp, &dr);
 
-    while( readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
+    while(readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
         countRecords++;
         //printf("inside loop of searchStrOnFile for %dth time",i);
-        //printf("%dth data record has been readen as:\n",i);
-        //printRecord(dr);
+        printf("th data record has been readen as:\n");
+        printRecord(dr);
         switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
             case 3: // siglaPais field
                 if(strcmp(dr.siglaPais,key) == 0){
                     //printRecord(dr);
-                    removeRegister(fp);
+                    removeRegister(fp, countRecords);
                     hasFound=1;
                 }
                 break;
             case 5: // unidadeMedida field
                 if(dr.unidadeMedida == key[0]){
                     //printRecord(dr);
-                    removeRegister(fp);
+                    removeRegister(fp, countRecords);
                     hasFound=1;
                 }
                 break;
             case 7: // nomePoPs field
                 if(strcmp(dr.nomePoPs,key) == 0){
                     //printRecord(dr);
-                    removeRegister(fp);
+                    removeRegister(fp, countRecords);
                     hasFound=1;
                 }
                 break;
             case 8: // nomePais field
                 if(strcmp(dr.nomePais,key) == 0){
                     //printRecord(dr);
-                    removeRegister(fp);
+                    removeRegister(fp, countRecords);
                     hasFound=1;
                 }   
                 break;
@@ -806,25 +806,40 @@ int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
 }
 
 //this function actually removes the registry after it is found
-void removeRegister(FILE *fp){
-    fseek(fp, -64, SEEK_CUR); //UFA EU ACHO QUE ISSO ESTÁ ERRADO //here I'm taking my current position that I'm in the file and going back 64 bytes to get to the beginning of the record
+void removeRegister(FILE *fp, int count){
+    //printf("Entrei na função removeRegister");
+    //HEADER h;
+    DATARECORD d;
+    //readHeader(fp,&h);
 
-    //UFA atualizar o header aqui!
+    //h.topoStack = count*64;
+    //h.proxRRN = /*final*/
+    //h.nroRegRem = h.nroRegRem+1;
+    //fseek(fp,0,SEEK_SET);
+    //writeHeaderRecord(fp,&h);
+
+    fseek(fp, -64, SEEK_CUR);
 
     const char* lixo = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"; //will be used to fill the entire registry space
-    char removido = '1'; //will be used to change the header
-    int encadeamento = attHeader(fp); //UFA mexer melhor aqui!
+    char removido = '1'; 
+    int encadeamento = 100;//h.topoStack; //aqui tem que ser passado o topo
+    
     fwrite(&removido, 1,1, fp); // UFA aqui eu to add o removido no cabeçalho meio que a força MELHORAR ISSO AQUI
     fwrite(&encadeamento, sizeof(int),1, fp); // UFA aqui eu to add o encadeamento no cabeçalho meio que a força MELHORAR ISSO AQUI
-    //for(int i = 0; i < 64, i++){
     fwrite(lixo, 1, 59, fp); //here the record you want to remove is being filled by $
-    //}
+    
 }
 
-HEADER updateHeader(FILE *fp, HEADER *he){
-    //UFA entrar com o file mesmo?
-    static HEADER newHeader;
-    newHeader = *he;
+HEADER updateHeader(FILE *fp, int count){
+    HEADER h;
+    fseek(fp, 0, SEEK_SET);
+    readHeader(fp, h);
+    h.topoStack = count*64;
+    printf("h.proxRRN %d", h.proxRRN);
+    //h.proxRRN = 
+    h.nroRegRem = h.nroRegRem+1;
+    fseek(fp, (count*64)+64+960,SEEK_SET);
+
     //UFA topo eu tenho que mudar, nele fica o RRN do registro removido
     //UFA proxRRN vai ter que mudar para apontar para o rrn disponivel para
     //UFA  inserção, no caso o ultima (?)
