@@ -568,6 +568,9 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     
     while(readDataRecord(fp, &dr) != 0){
         countRecords++;
+        printf("searchIntOnFile has gotten data record:\n");
+        printRecord(dr);
+        printf("countRecords currently as %d\n", countRecords);
         //printf("inside the loop of searchIntOnFile for %dth time\n",i);
         switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
             case 2: // idConecta field
@@ -609,6 +612,9 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
 
     while( readDataRecord(fp, &dr) != 0){
         countRecords++;
+        printf("searchStrOnFile has gotten data record:\n");
+        printRecord(dr);
+        printf("countRecords currently as %d\n", countRecords);
         //printf("inside loop of searchStrOnFile for %dth time",i);
         //printf("%dth data record has been readen as:\n",i);
         //printRecord(dr);

@@ -105,7 +105,7 @@ void functionality3(){
     // this loop will get the name of the field and then the search key
     char searchedField[MAXDATAFIELDNAME];  // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
     for(int i=0;i<nSearches;i++){
-        if(i != 0) fseek(fp,0,SEEK_SET); // if it is not the first search we shall reset the file pointer to start
+        if(i != 0) fseek(fp,CLUSTERSIZE,SEEK_SET); // if it is not the first search we shall reset the file pointer to right after header
         printf("Busca %d\n",i+1);
         // we simply input which field will be searched as a string and transform it onto a fieldFlag
         scanf("%s", searchedField);
