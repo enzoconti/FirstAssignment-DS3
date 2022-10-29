@@ -568,6 +568,9 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     
     while(readDataRecord(fp, &dr) != 0){
         countRecords++;
+        printf("searchIntOnFile has gotten data record:\n");
+        printRecord(dr);
+        printf("countRecords currently as %d\n", countRecords);
         //printf("inside the loop of searchIntOnFile for %dth time\n",i);
         switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
             case 2: // idConecta field
@@ -609,6 +612,9 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
 
     while(readDataRecord(fp, &dr) != 0){
         countRecords++;
+        printf("searchStrOnFile has gotten data record:\n");
+        printRecord(dr);
+        printf("countRecords currently as %d\n", countRecords);
         //printf("inside loop of searchStrOnFile for %dth time",i);
         //printf("%dth data record has been readen as:\n",i);
         //printRecord(dr);
@@ -827,7 +833,7 @@ void removeRegister(FILE *fp, int count){
     fwrite(&removido, 1,1, fp); // UFA aqui eu to add o removido no cabeçalho meio que a força MELHORAR ISSO AQUI
     fwrite(&encadeamento, sizeof(int),1, fp); // UFA aqui eu to add o encadeamento no cabeçalho meio que a força MELHORAR ISSO AQUI
     fwrite(lixo, 1, 59, fp); //here the record you want to remove is being filled by $
-    
+    updateHeader(fp,count);
 }
 
 HEADER updateHeader(FILE *fp, int count){
@@ -913,7 +919,8 @@ void compact(FILE *fp, int numRemovidos){ //UFA o numRemovidos esta no header, q
     }
 }
 
-//UFA ????????????????????
+// this function removes spaces from start and end of a string
+// it is needed on functionality1 to treat some special cases of the csv input
 char* removeSpaces(char* originalStr){
     //printf("removeSpaces called with str=%s\n", originalStr);
     int firstChar=0, lastChar=strlen(originalStr);
