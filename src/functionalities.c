@@ -50,6 +50,7 @@ void functionality1(){
     free(binFilepath);
 }
 
+//this is the main feature of functionality 2, here the binary file typed by the user is traversed so that all records are read and printed on the screen
 void functionality2(){
     FILE*fp;
     DATARECORD dr;
@@ -57,30 +58,30 @@ void functionality2(){
     int hasFound=0;
     int countCluters=0;
     char*binFilepath; // this will hold the filepath inputted by keyboard to the corresponding file
-    binFilepath = inputStr(); //pega o nome do arquivo
+    binFilepath = inputStr(); //get the file name
     
     fp = fopen(binFilepath, "rb"); // read onto a binary file
-    if(fp == NULL) {printOpenError(); return ;} 
-    readHeader(fp, &h);
+    if(fp == NULL) {printOpenError(); return ;} //if the file is empty, we return an error warning
+    readHeader(fp, &h); //header reading
     //printHeader(h);
-    if(h.status == '0') {printOpenError(); return ;}
-    while(readDataRecord(fp,&dr) != 0){
+    if(h.status == '0') {printOpenError(); return ;} //if the status field present in the header is equal to 0, we return an error warning
+    while(readDataRecord(fp,&dr) != 0){ //loop to loop through binary file records
         //printf("has readen the first dataRecord as:\n");
         //printRecord(dr);
-        if(dr.removido == '0'){
+        if(dr.removido == '0'){ //if the record is not marked as removed, I display it on the screen
             hasFound = 1;
             printRecord(dr);
         }
     }
-    if(hasFound == 0){
+    if(hasFound == 0){ // if there are no records
         printNoRecordError();
         countCluters = 1; // only the header has been readen
     }else{
-        countCluters = h.nroPagDisco;
+        countCluters = h.nroPagDisco; //save the number of disk pages
     }
     printf("Numero de paginas de disco: %d\n\n", countCluters);
 
-    fclose(fp);
+    fclose(fp); 
     free(binFilepath);
 }
 
@@ -122,7 +123,8 @@ void functionality3(){
 
     return ;
 }
-
+//this is the main feature of functionality 4 - in it the user searches for a record, 
+//in the same way as he does in functionality 3, but in this functionality the searched record is removed
 void functionality4(){
     HEADER headerHeader; 
 
@@ -131,18 +133,17 @@ void functionality4(){
     int removeRecords = 0;
     FILE* fp;
     // firstly, the input is given for filepath and the file is opened
-    binFilepath = inputStr();
+    binFilepath = inputStr(); //binary file that is typed by the user
     //printf("got filepath as %s\n", binFilepath);
-    fp = fopen(binFilepath, "rb+");
-    if(fp == NULL) {printOpenError(); return ;}
+    fp = fopen(binFilepath, "rb+"); //opens the file allowing changes to be made to it
+    if(fp == NULL) {printOpenError(); return ;} //if the file does not exist
      
-    //aqui a ideia eh ele o header inicial
-    readHeader(fp, &headerHeader);
+    readHeader(fp, &headerHeader); 
     if(headerHeader.status == '0') {printOpenError(); return ;}
 
     headerHeader.status = '0';
     fseek(fp,0,SEEK_SET);
-    writeHeaderRecord(fp,&headerHeader);
+    writeHeaderRecord(fp,&headerHeader); //I update the header because I'm modifying the file
 
     // then, the input is given for the number of searches
     int nSearches;
@@ -168,7 +169,7 @@ void functionality4(){
 
 
     fseek(fp,0,SEEK_SET);
-    writeHeaderRecord(fp,&headerHeader);
+    writeHeaderRecord(fp,&headerHeader); //// update the header because I have modified the records part of the file
 
     fclose(fp);
     binarioNaTela(binFilepath);
@@ -219,9 +220,10 @@ void functionality5(){
     free(filepath);
 }
 
+//feature 6 compresses the binary file, it permanently removes all records marked as removed 
+//(which are filled with $(garbage)), making records that are not removed back to sequential
 void functionality6(){
     HEADER headerHeader; 
-
     char* binFilepath;
     //int fieldFlag;
     //int removeRecords = 0; //UFA talvez eu não use
@@ -235,7 +237,7 @@ void functionality6(){
         return ;
     }
 
-    readHeader(fp, &headerHeader);
+    readHeader(fp, &headerHeader); //read the header to modify it after compression
     if(headerHeader.status == '0') {printOpenError(); return ;}
 
     headerHeader.status = '0';
@@ -246,7 +248,7 @@ void functionality6(){
     FILE*auxCompact;
     auxCompact = fopen("AUX.bin", "wb"); // we will only write on the new file
 
-    compact(fp, auxCompact,&headerHeader);
+    compact(fp, auxCompact,&headerHeader); //I enter the function that will do the actual compression
 
     fclose(fp);
     fclose(auxCompact);

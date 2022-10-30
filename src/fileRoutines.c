@@ -857,9 +857,8 @@ void removeRecord(FILE *fp,HEADER* h, int RRN){
 }
 
 
-//UFA ESSA MERDA TA UM GRANDE CAOS, PQP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ //UFA o numRemovidos esta no header, que é uma coisa que eu tenho que arrumar
-    //UFA - ABRIR O ARQUIVO AI...
+//function that will compress the file
+void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ 
     DATARECORD tempData;
     HEADER newH;
 
@@ -867,13 +866,13 @@ void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ //UFA o n
 
     // we skip the header of auxCompact bc we dont have all information about it
     fseek(auxCompact,CLUSTERSIZE,SEEK_SET); 
-    while(readDataRecord(OriginalFp,&tempData) != 0){
+    while(readDataRecord(OriginalFp,&tempData) != 0){ //traversing the file to find the records marked as removed
         if(tempData.removido == '0'){ // if it is not removed we rewrite on auxCompact
             countRecords++;
             writeDataRecord(auxCompact,&tempData);
         }
     }
-
+    //rewriting the header according to how the file was after compression
     newH.status = '1';
     newH.topoStack = -1;
     newH.nroRegRem = 0;
@@ -882,7 +881,7 @@ void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ //UFA o n
     newH.qttCompacta = currentHeader->qttCompacta+1;
 
     fseek(auxCompact,0,SEEK_SET);
-    writeHeaderRecord(auxCompact,&newH);
+    writeHeaderRecord(auxCompact,&newH); //writing the undeleted files in the helper file, which will be the "correct" file in the end
 
     return;
     
