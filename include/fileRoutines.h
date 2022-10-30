@@ -25,28 +25,19 @@ void writeDataRecord(FILE *fp, DATARECORD* dr);
 int writeDataField(FILE *fp, DATARECORD* dr,int fieldFlag);
 void readHeader(FILE* fp, HEADER*outh);
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag);
-int searchFileAndPrint(FILE* fp,int fieldFlag,int func);
+int searchFileAndPrint(FILE* fp,int fieldFlag);
+int searchFileAndRemove(FILE* fp,HEADER* h,int fieldFlag);
 int searchIntOnFile(FILE* fp, int fieldFlag, int key);
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key);
 int getFlag_fromDataField(char* searchedField);
 void insert(FILE* fp, int endRRN, DATARECORD* inputDr,HEADER *h, int inputFlag);
 char* removeSpaces(char* originalStr);
 int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h);
-/*
-void RRNread(char* filepath, int RRN);
-*/
 
-int removeIntOnFile(FILE* fp, int fieldFlag, int key);
-int removeStrOnFile(FILE*fp, int fieldFlag, char* key);
-<<<<<<< HEAD
-void removeRegister(FILE *fp, int count);
-void updateHeader(FILE *fp, int count);
-void compact(FILE *fp, int numRemovidos);
-int/*void*/ quantidadeRegistros(FILE *fp);
-=======
-void removeRegister(FILE *fp);
+int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key);
+int removeStrOnFile(FILE* fp, HEADER* h,int fieldFlag, char* key);
+void removeRecord(FILE *fp,HEADER* h, int RRN);
 void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader);
-// int/*void*/ quantidadeRegistros(FILE *fp);
->>>>>>> 922392d17b08b169700114f8d5580c32ff9cba5f
+
 
 #endif

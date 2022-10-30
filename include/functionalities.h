@@ -21,6 +21,7 @@ void functionality4();
 // this will be the main function for functionality 5 - that inputs a data record from keyboard and inserts onto a binary file
 void functionality5();
 
+// this will be the main function for functionality 6 - that compresses a file inputted via terminal
 void functionality6();
 
 #endif
