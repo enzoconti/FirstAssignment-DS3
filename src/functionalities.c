@@ -39,7 +39,7 @@ void functionality1(){
     //printf("written header ok, closing files\n");
 
     // closing the files
-    fclose(CSVfp); // WHY THIS FCLOSE DOES NOT WORK????????????????????????
+    fclose(CSVfp);
     fclose(binfp);
 
     // outputting onto terminal
@@ -140,6 +140,10 @@ void functionality4(){
     readHeader(fp, &headerHeader);
     if(headerHeader.status == '0') {printOpenError(); return ;}
 
+    headerHeader.status = '0';
+    fseek(fp,0,SEEK_SET);
+    writeHeaderRecord(fp,&headerHeader);
+
     // then, the input is given for the number of searches
     int nSearches;
     scanf("%d", &nSearches);
@@ -233,6 +237,11 @@ void functionality6(){
 
     readHeader(fp, &headerHeader);
     if(headerHeader.status == '0') {printOpenError(); return ;}
+
+    headerHeader.status = '0';
+    fseek(fp,0,SEEK_SET);
+    writeHeaderRecord(fp,&headerHeader);
+
 
     FILE*auxCompact;
     auxCompact = fopen("AUX.bin", "wb"); // we will only write on the new file

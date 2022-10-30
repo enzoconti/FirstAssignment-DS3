@@ -1,6 +1,7 @@
 #include "../include/fileRoutines.h"
 
 // this function will read the CSV from CSVfp line by line creating a temporary data record on RAM to be stored on the binary file binfp
+// it is utilized on functionality 1
 void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     char buffTrash[LINESIZE];
     int countRecords=0; // this counter will count how many lines there are in the csv(= number of records in the bin file) to be used on the header
@@ -31,6 +32,8 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     //printHeader(*head);
 }
 
+// this function reads a record from the CSV, being utilized on functionality 1
+// it returns 1 if the read was sucessfull, and 0 if not - being used on the stop condition of readCSV_writeBin loop
 int readCSVRecord(FILE* CSVfp, DATARECORD* dr){
     int flagSequence[7] = {2,7,8,3,4,5,6}; // This constant array helds the sequence of the fields inputted on CSV
     // the sequece is defined as: idConecta, nomePoPs, nomePais, siglaPais, idPoPsConectado, unidadeMedida, velocidade
@@ -48,6 +51,8 @@ int readCSVRecord(FILE* CSVfp, DATARECORD* dr){
     return 1;
 }
 
+// this function reads one field of the CSV (and fieldFlag carries the information of which field it is)
+// it returns 1 if the read is sucessfull and 0 if not
 int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
 
     char buffChar, nullFlag=1, buffStr[MAX_VARSTRINGSIZE];
@@ -58,7 +63,7 @@ int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
         nullFlag = fread(&buffChar,sizeof(char),1,CSVfp);
         if(nullFlag == 0) return 0;
 
-        if(isValid(CSVfp,buffChar) == 0){
+        if(isValid(CSVfp,buffChar) == 0){ // this sub-function checks for an invalid character to end the reading of a field
             break;
         }
 
@@ -67,7 +72,7 @@ int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
     }
     buffStr[i] = '\0';
 
-    // there is a special case in which the last or first characters are whitespaces
+    // there is some special cases in which the last or first characters are whitespaces
     // so we need a function to eliminate them
     strcpy(buffStr,removeSpaces(buffStr));
     
@@ -129,7 +134,12 @@ int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
     return 1;
 }
 
-int isValid(FILE *fp,char c){ //UFA o que essa funcao faz???
+// this function checks if a character readen by the csv is valid
+// ',' is invalid bc it is the delimitant between two fields
+// '\n' is invalid bc it is the delimitant between two records
+// there is another special case that is '\r' followed by '\n', in this case we return 0
+// but if the char is '\r' and the next is not '\n', so we need to fseek back bc the next is a field character
+int isValid(FILE *fp,char c){ 
     char nextChar;
     if(c == '\n' || c == ','){
         return 0;
@@ -137,10 +147,10 @@ int isValid(FILE *fp,char c){ //UFA o que essa funcao faz???
 
     else if(c == '\r'){
         nextChar = fgetc(fp);
-        if(nextChar == '\n'){
+        if(nextChar =! '\n'){
+            fseek(fp,-1,SEEK_CUR); // nextChar is a field character and we've gotten it by mistake, so fseek back to get it again when we read a field
             return 0;
-        }else{
-            fseek(fp,-1,SEEK_CUR);
+        }else if(nextChar == '\n'){
             return 0;
         }
     }
@@ -148,35 +158,19 @@ int isValid(FILE *fp,char c){ //UFA o que essa funcao faz???
     return 1;
 }
 
-
-void readFile(FILE* fp){
-    int countRecords=0;
-    DATARECORD tempData;
-    // HEADER tempHeader;
-
-    // readHeader(fp, &tempHeader); // AINDA FALTA IMPLEMENTAR
-
-    while(readDataRecord(fp, &tempData) != 0){ // this reads a Record from fp and puts its data into tempData
-        // printData(tempData);     // AINDA FALTA IMPLEMENTAR      
-        countRecords++;
-    }
-
-    return ;
-
-}
-
 // this will read a header and load it into RAM
+// it also sets the fp ready to later data record reading by fseeking it until the end of the cluster
 void readHeader(FILE* fp, HEADER* outHeader){
     for(int i=0;i<6;i++){
-        readHeaderField(fp,outHeader,i); // basically reading each field
+        readHeaderField(fp,outHeader,i); // basically reading each one of 6 fields
     }
 
     fseek(fp,CLUSTERSIZE - HEADERSIZE, SEEK_CUR); // this jumps the trash so that the readRecord that may follow can start by the data records
 
     return ;
 }
+
 // this reads one field of the header depending on fieldFlag
-// it also sets the fp ready to later data record reading by fseeking it until the end of the cluster
 void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
     switch(fieldFlag){
         case 0: // status field
@@ -217,17 +211,7 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
     //o fieldFlag indica quais dos 5 campos possíveis estamos lendo - para saber seu tamanho e onde colocá-lo na estrutura PERSON
 
 
-    while(countFieldsSize < DATARECORDSIZE){
-        // tentei fazer isso pra nao ler tudo mas ele precisa ler o encadeamento, entao nao posso pular direto
-        // senao da errado nas insercoes. se por acaso der problema reimplemento pra ler depois do segundo, mas sem ele parece funcionar
-        /*if(fieldFlag == 1){ // on the second iteration we check if the previous one read that the record is removed, if it is we stop reading
-            if(outData->removido == '1'){
-                fseek(fp,DATARECORDSIZE - countFieldsSize,SEEK_CUR);
-                return 1;
-            }
-        }*/
-
-        
+    while(countFieldsSize < DATARECORDSIZE){ // the stop case is until the end of the datarecord size, but bc there are variable size fields this is not always reached - which is the reason that readDataField must have a 0 return case to indicate the file has ended
         buff = readDataField(fp, fieldFlag, outData);
         //printf("inside the loop of readDataRecord, got buff=%d for fieldFlag=%d\n",buff,fieldFlag);
         //printf("data record currently as:\n\n");
@@ -241,7 +225,7 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
             countFieldsSize+=buff;// we accumulate the non-zero buffer to know how much of the record we have already read
         }//acumulamos o buffer diferente de zero para saber quanto do registrador já lemos
 
-        fieldFlag = fieldFlag + 1; // this makes the fieldFlag loop through 0 -> 1 -> 2 -> 3 -> ... -> 8 
+        fieldFlag = fieldFlag + 1; // this makes the fieldFlag increase from 0 to 8
         if(fieldFlag == 9){ // this means all the 9 fields have been readen, but not necessairly we have reached the size of record(bc it can be trash at the end)
             trashsize = DATARECORDSIZE - countFieldsSize;
             break;
@@ -249,14 +233,14 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
     }
     fseek(fp,trashsize,SEEK_CUR); // this makes the function jump the trash that may be on the end, making it possible to read the next record on a eventual next call
 
-    return 1; // if the Record has ended and the file still not, we return 1 to indicate to readFile that it can read another record
+    return 1; // if the Record has ended and the file still not, we return 1 to indicate the program can read another record
     //se o registro terminou e o arquivo ainda não, retornamos 1 para indicar ao readFile que ele pode ler outro registro
 }
 
 // this function will read one of the 9 possible data fields according to the fieldFlag and puts it onto a field of outData
 int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
     
-    int outSizeCounter = 0;
+    int outSizeCounter = 0; // this accumulates how much has been readen for this specific field
     int nullFlag = 1; // this flag will indicate when fread fails(meaning the file has ended)
     int i = 0;
     char buffChar = 'S';
@@ -265,7 +249,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
 
         case 0: // removido Field
             nullFlag = fread(&(outData->removido),sizeof(char),1,fp);
-            outSizeCounter = 1;
+            outSizeCounter = sizeof(char);
             break;
 
         case 1: // encadeamento Field
@@ -337,7 +321,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
                 if(nullFlag == 0) break;
                 outSizeCounter++;
             
-                if(i >= MAX_VARSTRINGSIZE){
+                if(i >= MAX_VARSTRINGSIZE){ // if it reaches the max size and has not found a delimiter it truncates the value (it should not be needed by the test cases, but some *stack smashing* erros ocurred without it)
                     outData->nomePais[MAX_VARSTRINGSIZE-1] = '\0';
                     break;
                 }
@@ -412,9 +396,9 @@ void writeDataRecord(FILE *fp, DATARECORD* dr){
     int sizeWritten=0;
     // simply writes the 9 different field options
     for(int i=0;i<9;i++){
-        sizeWritten += writeDataField(fp,dr,i);
+        sizeWritten += writeDataField(fp,dr,i); // writeDataField returns the size that was written
     }
-    int trashsize = DATARECORDSIZE - sizeWritten;
+    int trashsize = DATARECORDSIZE - sizeWritten; // the rest of fixed-size record is filled with trash
     char *trash;
     trash = malloc((trashsize+1) * sizeof(char));
     for(int i=0;i<=trashsize;i++){
@@ -492,7 +476,9 @@ int writeDataField(FILE *fp, DATARECORD* dr, int fieldFlag){
     return sizeWritten;
     
 }
-//UFA leio o campo identificao do que eh o dado e vejo se eh um campo de char ou int
+
+
+// this function is used by functionality 3 to search a field on a file and print the record that was found
 int searchFileAndPrint(FILE* fp,int fieldFlag){
     // bc we have strong types, we declare the two possible types of keys (but we will use only one)
     int IntegerKey;
@@ -546,7 +532,7 @@ int searchFileAndPrint(FILE* fp,int fieldFlag){
     return nRecords;
 }
 
-//UFA leio o campo identificao do que eh o dado e vejo se eh um campo de char ou int
+// this function is used by functionality 4 and is similar to the one above - but it must carry a header as argument bc it is updated(in RAM) while we remove records
 int searchFileAndRemove(FILE* fp,HEADER* h,int fieldFlag){
     // bc we have strong types, we declare the two possible types of keys (but we will use only one)
     int IntegerKey;
@@ -602,7 +588,7 @@ int searchFileAndRemove(FILE* fp,HEADER* h,int fieldFlag){
 }
 
 
-//UFA recebe o nome do campo do dado tipo int
+// this function searches the file for an int key, by reading every record and  printing it if the desired key-field equals the inputted search key of that field
 int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     DATARECORD dr;
     int countRecords=0,hasFound=0;
@@ -639,11 +625,11 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
         }
     }
 
-    if(hasFound == 0) printNoRecordError();
+    if(hasFound == 0) printNoRecordError(); // if there is no record that correponds to the one searched, we let the user know that there is no record
     return countRecords;
 }
 
-//UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
+// this function searches the file for a string/char key, by reading every record and  printing it if the desired key-field equals the inputted search key of that field
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     DATARECORD dr;
     int countRecords=0;
@@ -690,13 +676,13 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
         }
     }
 
-    if(hasFound == 0) printNoRecordError();
+    if(hasFound == 0) printNoRecordError(); // if there is no record that correponds to the one searched, we let the user know that there is no record
 
     return countRecords;
 }
 
 // this function inputs the name of a field in a string and returns a flag corresponding to that field
-int getFlag_fromDataField(char* searchedField){ //UFA o que essa funcao faz???
+int getFlag_fromDataField(char* searchedField){ 
     if(strcmp(searchedField, "idConecta") == 0){
         return 2;
     }
@@ -723,7 +709,9 @@ int getFlag_fromDataField(char* searchedField){ //UFA o que essa funcao faz???
     }
 }
 
-int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){ //UFA o que essa funcao faz???
+// this function is used in functionality 5 - it gets the RRN that sould be inserted
+// it returns a flag that indicates if that RRN is from end of file or from removed stack, so that the program knows if it must update header or not
+int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){ 
     int insertFlag;
     
     if(h->topoStack != -1){
@@ -738,24 +726,27 @@ int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){ //UFA o que essa funcao faz??
     return insertFlag;
 }
 
+// this function inserts a data record inputDr onto the RRN addRRN and, if necessary, updated the header h
 void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
-    int byteoffset = addRRN * DATARECORDSIZE + CLUSTERSIZE; // we skip the first cluster for header and sum it to the byteoffset from the data records
+    int byteoffset = addRRN * DATARECORDSIZE + CLUSTERSIZE; // we calculate the byteoffset from RRN by multiplying it to datarecordsize and skipping the first cluster that correponds to header
     fseek(fp,byteoffset,SEEK_SET);
     DATARECORD removedDataRecord;
 
     if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack, in the case that we insert on a removed spot and not on end
+        // reads to update header
         readDataRecord(fp, &removedDataRecord);
-        h->topoStack = removedDataRecord.encadeamento;
-        h->nroRegRem--; // descrease the number of removed records
-        fseek(fp,byteoffset,SEEK_SET); // back to the record to rewrite it
+        h->topoStack = removedDataRecord.encadeamento; // updates the stack
+        h->nroRegRem--;                                // descrease the number of removed records
+        fseek(fp,byteoffset,SEEK_SET);                 // back to the record to rewrite it
     }else{
         h->proxRRN++; // if we add to the end we need to count this RRN on proxRRN
     }
 
+    // we write the data record knowing that fp is already on the right position
     writeDataRecord(fp,inputDr);
 }
 
-//this function removes the fields identified as of type int
+// this function removes the fields identified as of type int
 int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key){
     DATARECORD dr; //struct destined to receive the record to be removed
     int countRecords=0; //is a variable that counts how many times the loop ran
@@ -771,7 +762,7 @@ int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key){
                 //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
                 if(dr.idConecta == key){
                     //printRecord(dr);
-                    removeRecord(fp, h,countRecords-1);
+                    removeRecord(fp, h,countRecords-1); // this sub-function removes the record and updated the header (we need RRN = countRecords-1 to update the stack)
                 }
                 break;
             case 4: // idPoPsConectado field
@@ -789,10 +780,10 @@ int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key){
         }
     }
 
-    return countRecords; //UFA, isso retorna a quantidade de vezes que o loop foi percorrido, mas não faz muito sentido....
+    return countRecords; // this returns how many records have been readen
 }
 
-//UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
+
 //this function removes the fields identified as of type char (string)
 int removeStrOnFile(FILE*fp, HEADER* h,int fieldFlag, char* key){
     DATARECORD dr;  //struct destined to receive the record to be removed
