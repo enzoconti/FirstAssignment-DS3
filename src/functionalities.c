@@ -50,6 +50,7 @@ void functionality1(){
     free(binFilepath);
 }
 
+//functionality 2 reads the records that are in the binary file
 void functionality2(){
     FILE*fp;
     DATARECORD dr;
@@ -72,10 +73,11 @@ void functionality2(){
             printRecord(dr);
         }
     }
+    //if no record was found, return error
     if(hasFound == 0){
         printNoRecordError();
         countCluters = 1; // only the header has been readen
-    }else{
+    }else{ //otherwise I keep the number of disk pages
         countCluters = h.nroPagDisco;
     }
     printf("Numero de paginas de disco: %d\n\n", countCluters);
@@ -122,7 +124,7 @@ void functionality3(){
 
     return ;
 }
-
+//this functionality removes one or more records from data belonging to the record that you want to remove, which is given by the user
 void functionality4(){
     HEADER headerHeader; 
 
@@ -212,13 +214,12 @@ void functionality5(){
     binarioNaTela(filepath);
     free(filepath);
 }
-
+//compresses the binary file so that records marked as removed no longer exist in the file or in junk format
 void functionality6(){
     HEADER headerHeader; 
 
     char* binFilepath;
-    //int fieldFlag;
-    //int removeRecords = 0; //UFA talvez eu não use
+
     FILE* fp;
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();

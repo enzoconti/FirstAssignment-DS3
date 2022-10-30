@@ -131,7 +131,8 @@ int readCSVField(FILE *CSVfp, DATARECORD*dr, int fieldFlag){
     return 1;
 }
 
-int isValid(FILE *fp,char c){ //UFA o que essa funcao faz???
+// checks when a comma is found or when the line is changed (skips to the bottom line)
+int isValid(FILE *fp,char c){ 
     char nextChar;
     if(c == '\n' || c == ','){
         return 0;
@@ -156,10 +157,10 @@ void readFile(FILE* fp){
     DATARECORD tempData;
     // HEADER tempHeader;
 
-    // readHeader(fp, &tempHeader); // AINDA FALTA IMPLEMENTAR
+    // readHeader(fp, &tempHeader);
 
     while(readDataRecord(fp, &tempData) != 0){ // this reads a Record from fp and puts its data into tempData
-        // printData(tempData);     // AINDA FALTA IMPLEMENTAR      
+        // printData(tempData);      
         countRecords++;
     }
 
@@ -212,16 +213,11 @@ void readHeaderField(FILE* fp, HEADER* outh, int fieldFlag){
 }
 
 // this will read an entire data record and put it into the outData instance
-// isso lerá um registro inteiro e o colocará na instância outData
 int readDataRecord(FILE *fp, DATARECORD* outData){
     //printf("readDataRecord has been called\n");
     int countFieldsSize = 0, buff=0, fieldFlag = 0,trashsize=0; // the fieldFlag indicates which of the 5 possible fields we are reading - to know its size and where to put it onto PERSON struct
-    //o fieldFlag indica quais dos 5 campos possíveis estamos lendo - para saber seu tamanho e onde colocá-lo na estrutura PERSON
-
 
     while(countFieldsSize < DATARECORDSIZE){
-        // tentei fazer isso pra nao ler tudo mas ele precisa ler o encadeamento, entao nao posso pular direto
-        // senao da errado nas insercoes. se por acaso der problema reimplemento pra ler depois do segundo, mas sem ele parece funcionar
         /*if(fieldFlag == 1){ // on the second iteration we check if the previous one read that the record is removed, if it is we stop reading
             if(outData->removido == '1'){
                 fseek(fp,DATARECORDSIZE - countFieldsSize,SEEK_CUR);
@@ -229,7 +225,6 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
             }
         }*/
 
-        
         buff = readDataField(fp, fieldFlag, outData);
         //printf("inside the loop of readDataRecord, got buff=%d for fieldFlag=%d\n",buff,fieldFlag);
         //printf("data record currently as:\n\n");
@@ -367,14 +362,14 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
 // and later adding the trash to make the header occupy exactly one cluster
 void writeHeaderRecord(FILE *fp, HEADER* hr){
     for(int i=0;i<6;i++){
-        writeHeaderField(fp, hr, i);
+        writeHeaderField(fp, hr, i); //inside this loop I'm going to call this function which is the one that actually writes to the file to write all the header information
     }
 
     // now we need to write the entire trash with const size to make the header occupy one whole cluster
     char* trash;
     int trashsize = CLUSTERSIZE - HEADERSIZE;
     trash = malloc( trashsize * sizeof(char));
-    for(int i=0;i<trashsize;i++){
+    for(int i=0;i<trashsize;i++){ //here I am filling the vacant space with the character that represents the garbage
         trash[i] = '$';
     }
 
@@ -413,13 +408,13 @@ void writeHeaderField(FILE *fp, HEADER* hr, int fieldFlag){
 void writeDataRecord(FILE *fp, DATARECORD* dr){
     int sizeWritten=0;
     // simply writes the 9 different field options
-    for(int i=0;i<9;i++){
+    for(int i=0;i<9;i++){ //loop to write all registry information
         sizeWritten += writeDataField(fp,dr,i);
     }
     int trashsize = DATARECORDSIZE - sizeWritten;
     char *trash;
     trash = malloc((trashsize+1) * sizeof(char));
-    for(int i=0;i<=trashsize;i++){
+    for(int i=0;i<=trashsize;i++){ //here I am filling the vacant space with the character that represents the garbage
         trash[i] = '$';
     }
 
@@ -494,7 +489,8 @@ int writeDataField(FILE *fp, DATARECORD* dr, int fieldFlag){
     return sizeWritten;
     
 }
-//UFA leio o campo identificao do que eh o dado e vejo se eh um campo de char ou int
+
+//function that stores in which field that was written by the user is the data that will be searched
 int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
     // bc we have strong types, we declare the two possible types of keys (but we will use only one)
     int IntegerKey;
@@ -511,7 +507,7 @@ int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
             isKeyInt = 1;
             break;
         case 3: // siglaPais Field
-            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
+            scan_quote_string(StrKey); 
             isKeyInt = 0;
             break;
         case 4: // idPoPsConectado Field
@@ -519,7 +515,7 @@ int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
             isKeyInt = 1;
             break;
         case 5: //unidadeMedida Field
-            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
+            scan_quote_string(StrKey); 
             isKeyInt = 0;
             break;
         case 6: // velocidade Field
@@ -527,11 +523,11 @@ int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
             isKeyInt = 1;
             break;
         case 7: // nomePoPs Field
-            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
+            scan_quote_string(StrKey); 
             isKeyInt = 0;
             break;
         case 8: // nomePais Field
-            scan_quote_string(StrKey); //UFA essa funcao eh dada pela prof para ler o dado de fato
+            scan_quote_string(StrKey); 
             isKeyInt = 0;
             break;
     }
@@ -557,7 +553,8 @@ int searchFileAndPrint(FILE* fp,int fieldFlag, int func){
     }
     return nRecords;
 }
-//UFA recebe o nome do campo do dado tipo int
+
+// looks for data of type int typed with the data of the record in which it is currently positioned
 int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     DATARECORD dr;
     int countRecords=0,hasFound=0;
@@ -567,15 +564,15 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     
     while(readDataRecord(fp, &dr) != 0){
         countRecords++;
-<<<<<<< HEAD
+//<<<<<<< HEAD
         printf("searchIntOnFile has gotten data record:\n");
         printRecord(dr);
         printf("countRecords currently as %d\n", countRecords);
-=======
+//=======
         //printf("searchIntOnFile has gotten data record:\n");
         //printRecord(dr);
         //printf("countRecords currently as %d\n", countRecords);
->>>>>>> 22f2b9fc4ea2eef8d9403ee36d4190633396d323
+//>>>>>>> 22f2b9fc4ea2eef8d9403ee36d4190633396d323
         //printf("inside the loop of searchIntOnFile for %dth time\n",i);
         switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
             case 2: // idConecta field
@@ -604,7 +601,7 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
     return countRecords;
 }
 
-//UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
+//looks for data of type char typed with the data of the record in which it is currently positioned
 int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     DATARECORD dr;
     int countRecords=0;
@@ -614,18 +611,17 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
     //printHeader(h);
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
     
-
     while(readDataRecord(fp, &dr) != 0){
         countRecords++;
-<<<<<<< HEAD
+//<<<<<<< HEAD
         printf("searchStrOnFile has gotten data record:\n");
         printRecord(dr);
         printf("countRecords currently as %d\n", countRecords);
-=======
+//=======
         //printf("searchStrOnFile has gotten data record:\n");
         //printRecord(dr);
         //printf("countRecords currently as %d\n", countRecords);
->>>>>>> 22f2b9fc4ea2eef8d9403ee36d4190633396d323
+//>>>>>>> 22f2b9fc4ea2eef8d9403ee36d4190633396d323
         //printf("inside loop of searchStrOnFile for %dth time",i);
         //printf("%dth data record has been readen as:\n",i);
         //printRecord(dr);
@@ -663,7 +659,7 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
 }
 
 
-int getFlag_fromDataField(char* searchedField){ //UFA o que essa funcao faz???
+int getFlag_fromDataField(char* searchedField){ 
     if(strcmp(searchedField, "idConecta") == 0){
         return 2;
     }
@@ -690,7 +686,7 @@ int getFlag_fromDataField(char* searchedField){ //UFA o que essa funcao faz???
     }
 }
 
-int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){ //UFA o que essa funcao faz???
+int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){ 
     int insertFlag;
     
     if(h->topoStack != -1){
@@ -704,7 +700,7 @@ int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){ //UFA o que essa funcao faz??
 
     return insertFlag;
 }
-
+// function that inserts a new record
 void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     int byteoffset = addRRN * DATARECORDSIZE + CLUSTERSIZE; // we skip the first cluster for header and sum it to the byteoffset from the data records
     fseek(fp,byteoffset,SEEK_SET);
@@ -762,11 +758,11 @@ int removeIntOnFile(FILE* fp, int fieldFlag, int key){
         }
     }
 
-    if(hasFound == 0) printNoRecordError(); //UFA (conferir) if no records were removed, that means no records were found, so I return an error
-    return countRecords; //UFA, isso retorna a quantidade de vezes que o loop foi percorrido, mas não faz muito sentido....
+    if(hasFound == 0) printNoRecordError(); //if no records were removed, that means no records were found, so I return an error
+    return countRecords; 
 }
 
-//UFA recebe o nome do campo do dado tipo char e o dado em si para encontrar o registro
+
 //this function removes the fields identified as of type char (string)
 int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
     DATARECORD dr;  //struct destined to receive the record to be removed
@@ -774,7 +770,7 @@ int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
     int countRecords=0; //is a variable that counts how many times the loop ran
     int hasFound=0; //is a variable that counts how many times a record has been
 
-    readHeader(fp,&h); //header reading //UFA
+    readHeader(fp,&h); 
     //printf("header has been readen as:\n");
     //printHeader(h);
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
@@ -824,94 +820,45 @@ int removeStrOnFile(FILE*fp, int fieldFlag, char* key){
 
 //this function actually removes the registry after it is found
 void removeRegister(FILE *fp, int count){
-    //printf("Entrei na função removeRegister");
-    //HEADER h;
-    //DATARECORD d;
-
-    //fseek(fp, -64, SEEK_CUR);
     fseek(fp,0,SEEK_SET);
-    updateHeader(fp,count);
+    updateHeader(fp,count); //update the header first
 
     fseek(fp,(count*64)+960,SEEK_SET);
     
-    //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 1\n");
-    //readDataRecord(fp,&d);
-    //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 2\n");
-    //printRecord(d);
-    //fseek(fp,(count*64)+960,SEEK_SET);
     const char* lixo = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"; //will be used to fill the entire registry space
     char removido = '1'; 
-    int encadeamento = 100;//h.topoStack; //aqui tem que ser passado o topo
+    int encadeamento = 100;
     
-    fwrite(&removido, 1,1, fp); // UFA aqui eu to add o removido no cabeçalho meio que a força MELHORAR ISSO AQUI
-    fwrite(&encadeamento, sizeof(int),1, fp); // UFA aqui eu to add o encadeamento no cabeçalho meio que a força MELHORAR ISSO AQUI
+    //write the registry control data to the file and fill its entire space with the character that symbolizes garbage
+    fwrite(&removido, 1,1, fp); 
+    fwrite(&encadeamento, sizeof(int),1, fp);
     fwrite(lixo, 1, 59, fp); //here the record you want to remove is being filled by $
-    //fseek(fp, -64, SEEK_CUR);
-    //readDataRecord(fp, &d);
-    //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 3\n");
-    //printRecord(d);
-    //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 4\n");
-    //updateHeader(fp,count);
-    //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-    //printRecord(d);
-    //printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 5\n");
 }
 
+//this function updates the header whenever a record is removed
 void updateHeader(FILE *fp, int count){
     HEADER h;
-    //fseek(fp, 0, SEEK_SET);
-    readHeader(fp, &h);
+    readHeader(fp, &h); //I read the header to know its information base
+
+    //I make the necessary changes
     h.topoStack = count*64;
-    //printf("h.proxRRN %d\n", h.proxRRN);
     h.proxRRN = h.proxRRN+1;
     h.nroRegRem = h.nroRegRem+1;
+    
+    //Back to top to update information
     fseek(fp, 0, SEEK_SET);
-    /*printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-    printf("h.topoStack %d\n", h.topoStack);
-    printf("h.proxRRN %d\n", h.proxRRN);
-    printf("h.nroRegRem %d\n", h.nroRegRem);*/
     writeHeaderRecord(fp,&h);
-    /*printf("h.topoStack %d\n", h.topoStack);
-    printf("h.proxRRN %d\n", h.proxRRN);
-    printf("h.nroRegRem %d\n", h.nroRegRem);*/
 }
 
-//UFA TEM QUE FAZER ESSA FUNÇÃO DIREITO SOCORRO AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-/*int attHeader(FILE* fp){
-    int seekAtual = ftell(fp);
-    fseek(fp, 1, SEEK_SET);
-    //(proxRRN * TAM_REGITRO + T_CABEÇALHO)
-    int contaa =  (seekAtual - 960)/64;
-    int aqui;
-    fread(&aqui, sizeof(int),1, fp);
-    fseek(fp, 1, SEEK_SET);
-    fwrite(&contaa, sizeof(int), 1, fp);
-    fseek(fp, seekAtual, SEEK_SET);
-    return aqui;    
-<<<<<<< HEAD
-}*/
-=======
-}
-/*
->>>>>>> 922392d17b08b169700114f8d5580c32ff9cba5f
-//UFA ISSO EH UM TESTE 
-int void quantidadeRegistros(FILE *fp){
-    DATARECORD registro;
-    int contador = 0;
-    while(readDataRecord(fp, &registro) != 0){
-        contador++;
-    }
-    //printf("Contador: %d\n", contador);
-    return contador;
-}
-*/
 
-//UFA ESSA MERDA TA UM GRANDE CAOS, PQP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ //UFA o numRemovidos esta no header, que é uma coisa que eu tenho que arrumar
-    //UFA - ABRIR O ARQUIVO AI...
+//=======
+//}
+
+//this function compresses the file - it removes all records marked as removed from the file, 
+//leaving again only the valid records in sequence and thus making the file lighter
+void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ 
     DATARECORD tempData;
     HEADER newH;
-
     int countRecords=0;
 
     // we skip the header of auxCompact bc we dont have all information about it
@@ -934,7 +881,6 @@ void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){ //UFA o n
     writeHeaderRecord(auxCompact,&newH);
 
     return;
-    
 }
 
 // this function removes spaces from start and end of a string
