@@ -111,7 +111,7 @@ void functionality3(){
         scanf("%s", searchedField);
         fieldFlag = getFlag_fromDataField(searchedField);
         
-        nRecords = searchFileAndPrint(fp, fieldFlag, 3);
+        nRecords = searchFileAndPrint(fp, fieldFlag);
         nClusters = nRecords * DATARECORDSIZE / CLUSTERSIZE + 1;
         if(nRecords *DATARECORDSIZE % CLUSTERSIZE != 0) nClusters++;
         printf("Numero de paginas de disco: %d\n\n", nClusters);
@@ -147,12 +147,12 @@ void functionality4(){
     // this loop will get the name of the field and then the search key
     char searchedField[MAXDATAFIELDNAME];  // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
     for(int i=0;i<nSearches;i++){
-        if(i != 0) fseek(fp,0,SEEK_SET); // if it is not the first search we shall reset the file pointer to start
+        if(i != 0) fseek(fp,CLUSTERSIZE,SEEK_SET); // if it is not the first search we shall reset the file pointer to start
         // we simply input which field will be searched as a string and transform it onto a fieldFlag
         scanf("%s", searchedField);
         fieldFlag = getFlag_fromDataField(searchedField);
         
-        removeRecords += searchFileAndPrint(fp, fieldFlag, 4);
+        removeRecords += searchFileAndRemove(fp, &headerHeader,fieldFlag);
     }
 
     //printf("removeRecords %d\n", removeRecords);
@@ -163,6 +163,8 @@ void functionality4(){
     printf("headerHeader.nroRegRem %d\n", headerHeader.nroRegRem);*/
 
 
+    fseek(fp,0,SEEK_SET);
+    writeHeaderRecord(fp,&headerHeader);
 
     fclose(fp);
     binarioNaTela(binFilepath);
@@ -231,9 +233,6 @@ void functionality6(){
 
     readHeader(fp, &headerHeader);
     if(headerHeader.status == '0') {printOpenError(); return ;}
-    //int i;
-    //for(i = 0; i < headerHeader.nroRegRem; i++){
-        //quantidadeRegistros(fp);
 
     FILE*auxCompact;
     auxCompact = fopen("AUX.bin", "wb"); // we will only write on the new file
