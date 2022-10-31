@@ -147,7 +147,7 @@ int isValid(FILE *fp,char c){
 
     else if(c == '\r'){
         nextChar = fgetc(fp);
-        if(nextChar =! '\n'){
+        if(nextChar != '\n'){
             fseek(fp,-1,SEEK_CUR); // nextChar is a field character and we've gotten it by mistake, so fseek back to get it again when we read a field
             return 0;
         }else if(nextChar == '\n'){
@@ -606,19 +606,19 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
             case 2: // idConecta field
                 //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
                 if(dr.idConecta == key){
-                    printRecord(dr);
+                    //printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 4: // idPoPsConectado field
                 if(dr.idPoPsConectado == key){
-                    printRecord(dr);
+                    //printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 6: // velocidade field
                 if(dr.velocidade == key){
-                    printRecord(dr);
+                    //printRecord(dr);
                     hasFound=1;
                 }
             break;
@@ -651,25 +651,25 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
         switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(fieldFlag=3), unidadeMedida(fieldFlag=5), nomePoPs(fieldFlag=7), nomePais(fieldFlag=8)
             case 3: // siglaPais field
                 if(strcmp(dr.siglaPais,key) == 0){
-                    printRecord(dr);
+                    //printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 5: // unidadeMedida field
                 if(dr.unidadeMedida == key[0]){
-                    printRecord(dr);
+                    //printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 7: // nomePoPs field
                 if(strcmp(dr.nomePoPs,key) == 0){
-                    printRecord(dr);
+                    //printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 8: // nomePais field
                 if(strcmp(dr.nomePais,key) == 0){
-                    printRecord(dr);
+                    //printRecord(dr);
                     hasFound=1;
                 }   
                 break;
@@ -753,26 +753,30 @@ int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key){
 
     //printf("inside searchIntOnFIle and looking for key=%d for fieldFlag=%d\n", key, fieldFlag);
 
-    
+    //int i=0;
     while(readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
         countRecords++;
-        //printf("inside the loop of searchIntOnFile for %dth time\n",i);
+        //printf("inside the loop of removeIntOnFile for %dth time\n",i++);
+        //printRecord(dr);
         switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
             case 2: // idConecta field
                 //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
                 if(dr.idConecta == key){
+                    printf("Im removing based on idConecta and dr.idConecta=%d and key=%d\n",dr.idConecta,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1); // this sub-function removes the record and updated the header (we need RRN = countRecords-1 to update the stack)
                 }
                 break;
             case 4: // idPoPsConectado field
                 if(dr.idPoPsConectado == key){
+                    printf("Im removing based on idPoPsConectado and dr.idPoPsConectado=%d and key=%d\n",dr.idPoPsConectado,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }
                 break;
             case 6: // velocidade field
                 if(dr.velocidade == key){
+                    printf("Im removing based on velocidade and dr.velocidade=%d and key=%d\n",dr.velocidade,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }
@@ -794,33 +798,37 @@ int removeStrOnFile(FILE*fp, HEADER* h,int fieldFlag, char* key){
     //printHeader(h);
     //printf("inside searchStrOnFile with key=%s and fieldFlag=%d\nftell is currently on %ld",key,fieldFlag, ftell(fp));
     //writeDataRecord(fp, &dr);
-
+    //int i=0;
     while(readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
         countRecords++;
-        //printf("inside loop of searchStrOnFile for %dth time",i);
+        //printf("inside loop of removeStrOnFile for %dth time",i++);
         //printf("th data record has been readen as:\n");
         //printRecord(dr);
         switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
             case 3: // siglaPais field
                 if(strcmp(dr.siglaPais,key) == 0){
+                    printf("Im removing based on siglaPais and dr.siglaPais=%s and key=%s\n", dr.siglaPais,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }
                 break;
             case 5: // unidadeMedida field
                 if(dr.unidadeMedida == key[0]){
+                    printf("Im removing based on unidadeMedida and dr.unidadeMedida=%c and key=%s\n", dr.unidadeMedida,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }
                 break;
             case 7: // nomePoPs field
                 if(strcmp(dr.nomePoPs,key) == 0){
+                    printf("Im removing based on nomePoPs and dr.nomePoPs=%s and key=%s\n", dr.nomePoPs,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }
                 break;
             case 8: // nomePais field
                 if(strcmp(dr.nomePais,key) == 0){
+                    printf("Im removing based on nomePais and dr.nomePais=%s and key=%s\n", dr.nomePais,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }   
@@ -833,7 +841,10 @@ int removeStrOnFile(FILE*fp, HEADER* h,int fieldFlag, char* key){
 
 //this function actually removes the registry after it is found
 void removeRecord(FILE *fp,HEADER* h, int RRN){
-    //printf("Entrei na função removeRegister");
+    printf("*****Entrei na função removeRecord******\n");
+    printf("Header atual:\n");
+    printHeader(*h);
+    printf("******RRN a ser removido eh %d******\n",RRN);
     //HEADER h;
     //DATARECORD d;
     int byteoffset = RRN * DATARECORDSIZE + CLUSTERSIZE;
@@ -853,7 +864,7 @@ void removeRecord(FILE *fp,HEADER* h, int RRN){
     // we rewrite this record
     fwrite(&newStatus,sizeof(char),1,fp);
     fwrite(&encadeamento,sizeof(int),1,fp);
-    fwrite(trash,sizeof(char),DATARECORDSIZE - 5,fp);
+    fwrite(trash,(DATARECORDSIZE - 5) *sizeof(char),1,fp);
 }
 
 

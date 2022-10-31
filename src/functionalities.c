@@ -113,8 +113,7 @@ void functionality3(){
         fieldFlag = getFlag_fromDataField(searchedField);
         
         nRecords = searchFileAndPrint(fp, fieldFlag);
-        nClusters = nRecords * DATARECORDSIZE / CLUSTERSIZE + 1;
-        if(nRecords *DATARECORDSIZE % CLUSTERSIZE != 0) nClusters++;
+        nClusters = calculateNroPagDisco(nRecords);
         printf("Numero de paginas de disco: %d\n\n", nClusters);
     }
 
@@ -167,7 +166,7 @@ void functionality4(){
     printf("headerHeader.proxRRN %d\n", headerHeader.proxRRN);
     printf("headerHeader.nroRegRem %d\n", headerHeader.nroRegRem);*/
 
-
+    headerHeader.status = '1';
     fseek(fp,0,SEEK_SET);
     writeHeaderRecord(fp,&headerHeader); //// update the header because I have modified the records part of the file
 
