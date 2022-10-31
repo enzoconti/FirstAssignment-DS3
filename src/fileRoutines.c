@@ -606,19 +606,19 @@ int searchIntOnFile(FILE* fp, int fieldFlag, int key){
             case 2: // idConecta field
                 //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
                 if(dr.idConecta == key){
-                    //printRecord(dr);
+                    printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 4: // idPoPsConectado field
                 if(dr.idPoPsConectado == key){
-                    //printRecord(dr);
+                    printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 6: // velocidade field
                 if(dr.velocidade == key){
-                    //printRecord(dr);
+                    printRecord(dr);
                     hasFound=1;
                 }
             break;
@@ -651,25 +651,25 @@ int searchStrOnFile(FILE*fp, int fieldFlag, char* key){
         switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(fieldFlag=3), unidadeMedida(fieldFlag=5), nomePoPs(fieldFlag=7), nomePais(fieldFlag=8)
             case 3: // siglaPais field
                 if(strcmp(dr.siglaPais,key) == 0){
-                    //printRecord(dr);
+                    printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 5: // unidadeMedida field
                 if(dr.unidadeMedida == key[0]){
-                    //printRecord(dr);
+                    printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 7: // nomePoPs field
                 if(strcmp(dr.nomePoPs,key) == 0){
-                    //printRecord(dr);
+                    printRecord(dr);
                     hasFound=1;
                 }
                 break;
             case 8: // nomePais field
                 if(strcmp(dr.nomePais,key) == 0){
-                    //printRecord(dr);
+                    printRecord(dr);
                     hasFound=1;
                 }   
                 break;
@@ -762,21 +762,21 @@ int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key){
             case 2: // idConecta field
                 //printf("inside case 2 of searchIntOnFile\nlooking for key=%d and got this record with dr.idConecta=%d\n'n",key,dr.idConecta);
                 if(dr.idConecta == key){
-                    printf("Im removing based on idConecta and dr.idConecta=%d and key=%d\n",dr.idConecta,key);
+                    //printf("Im removing based on idConecta and dr.idConecta=%d and key=%d\n",dr.idConecta,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1); // this sub-function removes the record and updated the header (we need RRN = countRecords-1 to update the stack)
                 }
                 break;
             case 4: // idPoPsConectado field
                 if(dr.idPoPsConectado == key){
-                    printf("Im removing based on idPoPsConectado and dr.idPoPsConectado=%d and key=%d\n",dr.idPoPsConectado,key);
+                    //printf("Im removing based on idPoPsConectado and dr.idPoPsConectado=%d and key=%d\n",dr.idPoPsConectado,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }
                 break;
             case 6: // velocidade field
                 if(dr.velocidade == key){
-                    printf("Im removing based on velocidade and dr.velocidade=%d and key=%d\n",dr.velocidade,key);
+                    //printf("Im removing based on velocidade and dr.velocidade=%d and key=%d\n",dr.velocidade,key);
                     //printRecord(dr);
                     removeRecord(fp, h,countRecords-1);
                 }
@@ -804,35 +804,37 @@ int removeStrOnFile(FILE*fp, HEADER* h,int fieldFlag, char* key){
         //printf("inside loop of removeStrOnFile for %dth time",i++);
         //printf("th data record has been readen as:\n");
         //printRecord(dr);
-        switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
-            case 3: // siglaPais field
-                if(strcmp(dr.siglaPais,key) == 0){
-                    printf("Im removing based on siglaPais and dr.siglaPais=%s and key=%s\n", dr.siglaPais,key);
-                    //printRecord(dr);
-                    removeRecord(fp, h,countRecords-1);
-                }
-                break;
-            case 5: // unidadeMedida field
-                if(dr.unidadeMedida == key[0]){
-                    printf("Im removing based on unidadeMedida and dr.unidadeMedida=%c and key=%s\n", dr.unidadeMedida,key);
-                    //printRecord(dr);
-                    removeRecord(fp, h,countRecords-1);
-                }
-                break;
-            case 7: // nomePoPs field
-                if(strcmp(dr.nomePoPs,key) == 0){
-                    printf("Im removing based on nomePoPs and dr.nomePoPs=%s and key=%s\n", dr.nomePoPs,key);
-                    //printRecord(dr);
-                    removeRecord(fp, h,countRecords-1);
-                }
-                break;
-            case 8: // nomePais field
-                if(strcmp(dr.nomePais,key) == 0){
-                    printf("Im removing based on nomePais and dr.nomePais=%s and key=%s\n", dr.nomePais,key);
-                    //printRecord(dr);
-                    removeRecord(fp, h,countRecords-1);
-                }   
-                break;
+        if(dr.removido == '0'){
+            switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
+                case 3: // siglaPais field
+                    if(strcmp(dr.siglaPais,key) == 0){
+                        //printf("Im removing based on siglaPais and dr.siglaPais=%s and key=%s\n", dr.siglaPais,key);
+                        //printRecord(dr);
+                        removeRecord(fp, h,countRecords-1);
+                    }
+                    break;
+                case 5: // unidadeMedida field
+                    if(dr.unidadeMedida == key[0]){
+                        //printf("Im removing based on unidadeMedida and dr.unidadeMedida=%c and key=%s\n", dr.unidadeMedida,key);
+                        //printRecord(dr);
+                        removeRecord(fp, h,countRecords-1);
+                    }
+                    break;
+                case 7: // nomePoPs field
+                    if(strcmp(dr.nomePoPs,key) == 0){
+                        //printf("Im removing based on nomePoPs and dr.nomePoPs=%s and key=%s\n", dr.nomePoPs,key);
+                        //printRecord(dr);
+                        removeRecord(fp, h,countRecords-1);
+                    }
+                    break;
+                case 8: // nomePais field
+                    if(strcmp(dr.nomePais,key) == 0){
+                        //printf("Im removing based on nomePais and dr.nomePais=%s and key=%s\n", dr.nomePais,key);
+                        //printRecord(dr);
+                        removeRecord(fp, h,countRecords-1);
+                    }   
+                    break;
+            }
         }
     }
 
@@ -841,17 +843,17 @@ int removeStrOnFile(FILE*fp, HEADER* h,int fieldFlag, char* key){
 
 //this function actually removes the registry after it is found
 void removeRecord(FILE *fp,HEADER* h, int RRN){
-    printf("*****Entrei na função removeRecord******\n");
-    printf("Header atual:\n");
-    printHeader(*h);
-    printf("******RRN a ser removido eh %d******\n",RRN);
+    //printf("*****Entrei na função removeRecord******\n");
+    //printf("Header atual:\n");
+    //printHeader(*h);
+    //printf("******RRN a ser removido eh %d******\n",RRN);
     //HEADER h;
     //DATARECORD d;
     int byteoffset = RRN * DATARECORDSIZE + CLUSTERSIZE;
     fseek(fp,byteoffset,SEEK_SET);
     
     char newStatus = '1';
-    // pushing onto the removed stack
+    // updating encadeamento
     int encadeamento = h->topoStack;
 
     // updating header
@@ -859,12 +861,15 @@ void removeRecord(FILE *fp,HEADER* h, int RRN){
     h->nroRegRem++;
 
     // only 5 bytes written, the rest is trash (+1 for \0)
-    char trash[DATARECORDSIZE - 5 + 1] = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$";
+    //char trash[DATARECORDSIZE - 5 + 1] = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$";
 
     // we rewrite this record
     fwrite(&newStatus,sizeof(char),1,fp);
     fwrite(&encadeamento,sizeof(int),1,fp);
-    fwrite(trash,(DATARECORDSIZE - 5) *sizeof(char),1,fp);
+    for(int i=0;i<DATARECORDSIZE - 5;i++){
+        fwrite("$",sizeof(char),1,fp);
+    }
+    
 }
 
 

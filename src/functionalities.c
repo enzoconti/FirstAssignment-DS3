@@ -64,14 +64,17 @@ void functionality2(){
     if(fp == NULL) {printOpenError(); return ;} //if the file is empty, we return an error warning
     readHeader(fp, &h); //header reading
     //printHeader(h);
+    //int i=0;
     if(h.status == '0') {printOpenError(); return ;} //if the status field present in the header is equal to 0, we return an error warning
     while(readDataRecord(fp,&dr) != 0){ //loop to loop through binary file records
+        //printf("***********\nRRN=%d\n",i++);
         //printf("has readen the first dataRecord as:\n");
         //printRecord(dr);
         if(dr.removido == '0'){ //if the record is not marked as removed, I display it on the screen
             hasFound = 1;
             printRecord(dr);
         }
+        //printf("**********\n");
     }
     if(hasFound == 0){ // if there are no records
         printNoRecordError();
@@ -168,6 +171,8 @@ void functionality4(){
 
     headerHeader.status = '1';
     fseek(fp,0,SEEK_SET);
+    //printf("final header:\n");
+    //printHeader(headerHeader);
     writeHeaderRecord(fp,&headerHeader); //// update the header because I have modified the records part of the file
 
     fclose(fp);
