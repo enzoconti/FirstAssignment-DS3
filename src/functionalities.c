@@ -2,41 +2,27 @@
 
 // this is the main funciton for functionality 1, which is based on CREATE TABLE from SQL
 void functionality1(){
-    //printf("inside functionality 1\n");
     HEADER h;
     h = newHeader();
-    //printf("succesfully created new empty header\n");
     FILE* CSVfp, *binfp;
     char* csvFilepath, *binFilepath; // this will hold the filepaths inputted by keyboard to the corresponding files
-    //printf("inputting filepaths\n");
     csvFilepath = inputStr();
-    //printf("got the csv filepath as:%s\n", csvFilepath);
 
     binFilepath = inputStr();
-    //printf("got the bin filepath as:%s\n", binFilepath);
 
     // openning both filepaths
     CSVfp = fopen(csvFilepath, "r");        // read a non-binary file
     if(CSVfp == NULL) {printOpenError(); return ;}
     binfp = fopen(binFilepath, "wb"); // write onto a binary file
     if(binfp == NULL) {printOpenError(); return ;}
-    //printf("both files opened ok\n");
 
     h.status = '0'; // we set the header status as inconsistent now that the binary file is opened
-    //printf("writing initial header\n");
     writeHeaderRecord(binfp,&h); //  we write the initial header, that has nothing but the flag for inconsistency
-    //printf("initial header written ok\n");
 
-    //printf("calling readCSV_writeBin now\n");
     // this larger function will input the CSV line, decompose it into the right struct fields and write the data records (updating the header while it does so)
     readCSV_writeBin(CSVfp, binfp, &h);
-    //printf("readCSV_writeBin has gone out ok\n");
-
-    // fseek to the beginning of the file to write the updated header
-    //printf("going to fseek to write the header now\n");
     fseek(binfp,0,SEEK_SET);
     writeHeaderRecord(binfp,&h);
-    //printf("written header ok, closing files\n");
 
     // closing the files
     fclose(CSVfp);
@@ -63,18 +49,12 @@ void functionality2(){
     fp = fopen(binFilepath, "rb"); // read onto a binary file
     if(fp == NULL) {printOpenError(); return ;} //if the file is empty, we return an error warning
     readHeader(fp, &h); //header reading
-    //printHeader(h);
-    //int i=0;
     if(h.status == '0') {printOpenError(); return ;} //if the status field present in the header is equal to 0, we return an error warning
     while(readDataRecord(fp,&dr) != 0){ //loop to loop through binary file records
-        //printf("***********\nRRN=%d\n",i++);
-        //printf("has readen the first dataRecord as:\n");
-        //printRecord(dr);
         if(dr.removido == '0'){ //if the record is not marked as removed, I display it on the screen
             hasFound = 1;
             printRecord(dr);
         }
-        //printf("**********\n");
     }
     if(hasFound == 0){ // if there are no records
         printNoRecordError();
@@ -95,7 +75,6 @@ void functionality3(){
     HEADER h;   
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();
-    //printf("got filepath as %s\n", binFilepath);
     fp = fopen(binFilepath, "rb");
     if(fp == NULL) {printOpenError(); return ;} 
 
@@ -136,7 +115,6 @@ void functionality4(){
     FILE* fp;
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr(); //binary file that is typed by the user
-    //printf("got filepath as %s\n", binFilepath);
     fp = fopen(binFilepath, "rb+"); //opens the file allowing changes to be made to it
     if(fp == NULL) {printOpenError(); return ;} //if the file does not exist
      
@@ -162,17 +140,9 @@ void functionality4(){
         removeRecords += searchFileAndRemove(fp, &headerHeader,fieldFlag);
     }
 
-    //printf("removeRecords %d\n", removeRecords);
-    /*fseek(fp, 0, SEEK_SET);
-    readHeader(fp, &headerHeader);
-    printf("headerHeader.topoStack %d\n", headerHeader.topoStack);
-    printf("headerHeader.proxRRN %d\n", headerHeader.proxRRN);
-    printf("headerHeader.nroRegRem %d\n", headerHeader.nroRegRem);*/
-
     headerHeader.status = '1';
     fseek(fp,0,SEEK_SET);
-    //printf("final header:\n");
-    //printHeader(headerHeader);
+
     writeHeaderRecord(fp,&headerHeader); //// update the header because I have modified the records part of the file
 
     fclose(fp);
@@ -206,7 +176,6 @@ void functionality5(){
 
     for(int i=0;i<n;i++){
         inputDataRecord(&inputdr);
-        //printRecord(inputdr);
 
         inputFlag = getRRN4Insertion(fp,&RRN2badded,&hr);
         
@@ -229,12 +198,9 @@ void functionality5(){
 void functionality6(){
     HEADER headerHeader; 
     char* binFilepath;
-    //int fieldFlag;
-    //int removeRecords = 0; //UFA talvez eu não use
     FILE* fp;
     // firstly, the input is given for filepath and the file is opened
     binFilepath = inputStr();
-    //printf("got filepath as %s\n", binFilepath);
     fp = fopen(binFilepath, "rb");
     if(fp == NULL) {
         printOpenError(); 

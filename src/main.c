@@ -1,3 +1,8 @@
+/*
+i.e. 11372883 - Jade Bortot de Paiva - 100%
+i.e. 12547145 - Enzo serrano Conti - 100%
+*/
+
 #include "../include/structCode.h"
 #include "../include/fileRoutines.h"
 #include "../include/funcoesFornecidas.h"

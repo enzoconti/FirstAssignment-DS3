@@ -1,4 +1,3 @@
-
 #include "../include/funcoesFornecidas.h"
 
 void readline(char* string){
