@@ -1,4 +1,5 @@
 #include "../include/funcoesFornecidas.h"
+// given functions file(but scan_quote_string had minor changes)
 
 void readline(char* string){
     char c = 0;

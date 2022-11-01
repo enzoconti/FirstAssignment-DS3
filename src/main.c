@@ -7,7 +7,6 @@ i.e. 12547145 - Enzo serrano Conti - 100%
 #include "../include/fileRoutines.h"
 #include "../include/funcoesFornecidas.h"
 #include "../include/functionalities.h"
-#include "../include/globalvalues.h"
 #include "../include/IOFile.h"
 #include <stdio.h>
 #include <stdlib.h>

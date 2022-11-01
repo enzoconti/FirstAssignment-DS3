@@ -7,7 +7,6 @@
 #include "fileRoutines.h"
 #include "funcoesFornecidas.h"
 #include "functionalities.h"
-#include "globalvalues.h"
 #include "structCode.h"
 
 char* inputStr();

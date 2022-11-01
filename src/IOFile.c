@@ -1,4 +1,5 @@
 #include "../include/IOFile.h"
+// this file has every formatted input or output
 
 // this is a simple function to input a filepath into a dynamically allocated string and reallocate it not to waste memory
 char* inputStr(){
@@ -10,6 +11,8 @@ char* inputStr(){
     return outStr;
 }
 
+// this function prints an inputted record dr field by field
+// it only prints a field after checking if it is not empty/trash
 void printRecord(DATARECORD dr){
     if(dr.idConecta != -1) printf("Identificador do ponto: %d\n", dr.idConecta);
     if(strlen(dr.nomePoPs) != 0) printf("Nome do ponto: %s\n", dr.nomePoPs);
@@ -21,6 +24,8 @@ void printRecord(DATARECORD dr){
     
 }
 
+// this function prints an inputted header h field by field
+// there is no conditionals bc header is never empty
 void printHeader(HEADER h){
     printf("status=%c\n",h.status);
     printf("topoStack=%d\n",h.topoStack);
@@ -38,6 +43,7 @@ void printNoRecordError(){
     printf("Registro inexistente.\n\n");
 }
 
+// this function inputs a data record dr from keyboard by inputting field by field
 void inputDataRecord(DATARECORD* dr){
     int flagSequence[7] ={2,7,8,3,4,5,6}; // This constant array helds the sequence of the fields inputted on CSV
     // the sequece is defined as: idConecta, nomePoPs, nomePais, siglaPais, idPoPsConectado, unidadeMedida, velocidade
@@ -51,6 +57,9 @@ void inputDataRecord(DATARECORD* dr){
     dr->encadeamento = -1;
 }
 
+// this function inputs a data field to datarecord dr according to the fieldFlag it receives
+// it gets a field between quotes and removes it(scan_quote_string function)
+// and then it puts either the inputted value or an empty value on dr.field
 void inputDataField(DATARECORD* dr, int fieldFlag){
     char buffStr[MAX_VARSTRINGSIZE];
     scan_quote_string(buffStr);

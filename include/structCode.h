@@ -1,8 +1,11 @@
 #ifndef STRUCTCODE_H
 #define STRUCTCODE_H
+// this file defines the struct and other useful values
 
 
-#include "globalvalues.h"
+// this two values have not so much to do with the struct but are needed for the project and put here
+#define CLUSTERSIZE 960 // this is the pre-stabilished size of the cluster("pagina de disco" on PT-BR)
+#define LINESIZE 100 // max size of a csv line
 
 
 #define HEADERSIZE 21 // this is the fixed size of the header record

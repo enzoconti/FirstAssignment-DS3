@@ -1,7 +1,9 @@
 #include "../include/fileRoutines.h"
+// this file has all the routines that run on binary/csv files
+// it is a bit extense, but also bc we have everything documented :)
 
-// this function will read the CSV from CSVfp line by line creating a temporary data record on RAM to be stored on the binary file binfp
-// it is utilized on functionality 1
+// this function will read the CSV from CSVfp record by record creating a temporary data record on RAM to be stored on the binary file binfp
+// it is used in functionality 1
 void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
     char buffTrash[LINESIZE];
     int countRecords=0; // this counter will count how many lines there are in the csv(= number of records in the bin file) to be used on the header
@@ -11,7 +13,7 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
                                    // as the sequence is constant in this project, this is not used by the program (it's just a default for csv files)
 
     while(readCSVRecord(CSVfp, &tempData) != 0){
-        // this fields are not inputted in the csv so we hard-code them here
+        // this fields are not inputted in the csv so we hard-code them here as not removed nor making part of the removed stack
         tempData.removido = '0';
         tempData.encadeamento = -1;
 
@@ -27,7 +29,7 @@ void readCSV_writeBin(FILE *CSVfp, FILE *binfp, HEADER *head){
 
 }
 
-// this function reads a record from the CSV, being utilized on functionality 1
+// this function reads a record from the CSV, being used in functionality 1
 // it returns 1 if the read was sucessfull, and 0 if not - being used on the stop condition of readCSV_writeBin loop
 int readCSVRecord(FILE* CSVfp, DATARECORD* dr){
     int flagSequence[7] = {2,7,8,3,4,5,6}; // This constant array helds the sequence of the fields inputted on CSV
@@ -211,6 +213,7 @@ int readDataRecord(FILE *fp, DATARECORD* outData){
             break;
         }
     }
+    
     fseek(fp,trashsize,SEEK_CUR); // this makes the function jump the trash that may be on the end, making it possible to read the next record on a eventual next call
 
     return 1; // if the Record has ended and the file still not, we return 1 to indicate the program can read another record
@@ -267,7 +270,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
                 if(nullFlag == 0) break;
                 outSizeCounter++;
             
-                if(i >= MAX_VARSTRINGSIZE){
+                if(i >= MAX_VARSTRINGSIZE){ // if it reaches the max size and has not found a delimiter it truncates the value (it is needed only in a specific case of functionality 4 - which is better explained in function "removeStrOnFile")
                     outData->nomePoPs[MAX_VARSTRINGSIZE-1] = '\0';
                     break;
                 }
@@ -290,7 +293,7 @@ int readDataField(FILE* fp, int fieldFlag, DATARECORD* outData){
                 if(nullFlag == 0) break;
                 outSizeCounter++;
             
-                if(i >= MAX_VARSTRINGSIZE){ // if it reaches the max size and has not found a delimiter it truncates the value (it should not be needed by the test cases, but some *stack smashing* erros ocurred without it)
+                if(i >= MAX_VARSTRINGSIZE){ // technically this should be needed only for the previous field but we leave it here just in case bc stack smashing erros could occur in some cases
                     outData->nomePais[MAX_VARSTRINGSIZE-1] = '\0';
                     break;
                 }
@@ -667,13 +670,13 @@ int getRRN4Insertion(FILE* fp, int*RRN,HEADER* h){
     return insertFlag;
 }
 
-// this function inserts a data record inputDr onto the RRN addRRN and, if necessary, updated the header h
+// this function inserts a data record inputDr onto the RRN addRRN and, if necessary, updates the header h
 void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     int byteoffset = addRRN * DATARECORDSIZE + CLUSTERSIZE; // we calculate the byteoffset from RRN by multiplying it to datarecordsize and skipping the first cluster that correponds to header
     fseek(fp,byteoffset,SEEK_SET);
     DATARECORD removedDataRecord;
 
-    if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack, in the case that we insert on a removed spot and not on end
+    if(inputFlag == 1){ // this will update the header topoStack field by popping the RRN2 from the stack, in the case that we insert in a removed spot and not in the end
         // reads to update header
         readDataRecord(fp, &removedDataRecord);
         h->topoStack = removedDataRecord.encadeamento; // updates the stack
@@ -687,7 +690,7 @@ void insert(FILE* fp, int addRRN, DATARECORD* inputDr,HEADER *h, int inputFlag){
     writeDataRecord(fp,inputDr);
 }
 
-// this function removes the fields identified as of type int
+// this function removes the fields of type int
 int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key){
     DATARECORD dr; //struct destined to receive the record to be removed
     int countRecords=0; //is a variable that counts how many times the loop ran
@@ -695,39 +698,47 @@ int removeIntOnFile(FILE* fp, HEADER* h,int fieldFlag, int key){
     while(readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
         countRecords++;
 
-        switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
-            case 2: // idConecta field
-                
-                if(dr.idConecta == key){
-                    removeRecord(fp, h,countRecords-1); // this sub-function removes the record and updated the header (we need RRN = countRecords-1 to update the stack)
-                }
+        if(dr.removido == '0'){ // this should only be needed for 1 special case of removeStrOnFIle, but we leave it for portability and just in case there is a not predicted case here where it is also needed
+            switch(fieldFlag){ // there are 3 integer data fields, idConecta(2), idPoPsConectado(4) and velocidade(6)
+                case 2: // idConecta field
+
+                    if(dr.idConecta == key){
+                        removeRecord(fp, h,countRecords-1); // this sub-function removes the record and updated the header (we need RRN = countRecords-1 to update the stack)
+                    }
+                    break;
+                case 4: // idPoPsConectado field
+                    if(dr.idPoPsConectado == key){
+                        removeRecord(fp, h,countRecords-1);
+                    }
+                    break;
+                case 6: // velocidade field
+                    if(dr.velocidade == key){
+                        removeRecord(fp, h,countRecords-1);
+                    }
                 break;
-            case 4: // idPoPsConectado field
-                if(dr.idPoPsConectado == key){
-                    removeRecord(fp, h,countRecords-1);
-                }
-                break;
-            case 6: // velocidade field
-                if(dr.velocidade == key){
-                    removeRecord(fp, h,countRecords-1);
-                }
-            break;
+            }
         }
     }
 
     return countRecords; // this returns how many records have been readen
 }
 
-//this function removes the fields identified as of type char (string)
+//this function removes the fields of type char (string)
 int removeStrOnFile(FILE*fp, HEADER* h,int fieldFlag, char* key){
     DATARECORD dr;  //struct destined to receive the record to be removed
     int countRecords=0; //is a variable that counts how many times the loop ran
 
     while(readDataRecord(fp, &dr) != 0){ //this loop is reading the data from the file and passing it to the struct as long as there is data in the file
         countRecords++;
-        //printf("inside loop of removeStrOnFile for %dth time",i++);
-        //printf("th data record has been readen as:\n");
-        //printRecord(dr);
+
+        // here a conditional is needed in which we only remove a record if it has not been removed yet
+        // it is needed bc in a removed record we fill everything after "encadeamento" with trash
+        // this means that there is no delimiter, so readDataField will truncate the value to fit in nomePoPs(the first variable-size field)
+        // the following field, nomePais, is not changed bc of this
+        // this means that it maintains the value of the previous readen record
+        // so, if the key is on nomePais and the previous record matches, it mistankenly would remove the next one again
+        // this messes up with the number of removed records and the removed stack
+
         if(dr.removido == '0'){
             switch(fieldFlag){ // there are 4 char/char* data fields, siglaPais(3), unidadeMedida(5), nomePoPs(7), nomePais(8)
                 case 3: // siglaPais field
@@ -769,13 +780,10 @@ void removeRecord(FILE *fp,HEADER* h, int RRN){
     h->topoStack = RRN;
     h->nroRegRem++;
 
-    // only 5 bytes written, the rest is trash (+1 for \0)
-    //char trash[DATARECORDSIZE - 5 + 1] = "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$";
-
     // we rewrite this record
     fwrite(&newStatus,sizeof(char),1,fp);
     fwrite(&encadeamento,sizeof(int),1,fp);
-    for(int i=0;i<DATARECORDSIZE - 5;i++){
+    for(int i=0;i<DATARECORDSIZE - 5;i++){ // 5 bytes already written so i < DATARECORDSIZE-5
         fwrite("$",sizeof(char),1,fp);
     }
 }
@@ -804,8 +812,7 @@ void compact(FILE *OriginalFp,FILE* auxCompact,HEADER* currentHeader){
     newH.proxRRN = countRecords;
     newH.qttCompacta = currentHeader->qttCompacta+1;
 
-    fseek(auxCompact,0,SEEK_SET);
-    writeHeaderRecord(auxCompact,&newH); //writing the undeleted files in the helper file, which will be the "correct" file in the end
+    *currentHeader = newH; // we set the inputted header to the new one so we update it on func6 function
 
     return;
 }

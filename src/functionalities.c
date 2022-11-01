@@ -7,7 +7,6 @@ void functionality1(){
     FILE* CSVfp, *binfp;
     char* csvFilepath, *binFilepath; // this will hold the filepaths inputted by keyboard to the corresponding files
     csvFilepath = inputStr();
-
     binFilepath = inputStr();
 
     // openning both filepaths
@@ -19,7 +18,7 @@ void functionality1(){
     h.status = '0'; // we set the header status as inconsistent now that the binary file is opened
     writeHeaderRecord(binfp,&h); //  we write the initial header, that has nothing but the flag for inconsistency
 
-    // this larger function will input the CSV line, decompose it into the right struct fields and write the data records (updating the header while it does so)
+    // this larger function will input the CSV field by field, composing them into records to be written(updating the header while it does so)
     readCSV_writeBin(CSVfp, binfp, &h);
     fseek(binfp,0,SEEK_SET);
     writeHeaderRecord(binfp,&h);
@@ -48,8 +47,10 @@ void functionality2(){
     
     fp = fopen(binFilepath, "rb"); // read onto a binary file
     if(fp == NULL) {printOpenError(); return ;} //if the file is empty, we return an error warning
+    
     readHeader(fp, &h); //header reading
     if(h.status == '0') {printOpenError(); return ;} //if the status field present in the header is equal to 0, we return an error warning
+    
     while(readDataRecord(fp,&dr) != 0){ //loop to loop through binary file records
         if(dr.removido == '0'){ //if the record is not marked as removed, I display it on the screen
             hasFound = 1;
@@ -62,7 +63,7 @@ void functionality2(){
     }else{
         countCluters = h.nroPagDisco; //save the number of disk pages
     }
-    printf("Numero de paginas de disco: %d\n\n", countCluters);
+    printf("Numero de paginas de disco: %d\n\n", countCluters); // output formatting
 
     fclose(fp); 
     free(binFilepath);
@@ -89,14 +90,18 @@ void functionality3(){
     char searchedField[MAXDATAFIELDNAME];  // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
     for(int i=0;i<nSearches;i++){
         if(i != 0) fseek(fp,CLUSTERSIZE,SEEK_SET); // if it is not the first search we shall reset the file pointer to right after header
-        printf("Busca %d\n",i+1);
+        
+        printf("Busca %d\n",i+1); // output formatting
+
         // we simply input which field will be searched as a string and transform it onto a fieldFlag
         scanf("%s", searchedField);
         fieldFlag = getFlag_fromDataField(searchedField);
         
+        // this larges function searches the key and prints it, returning the number of Records it has readen
         nRecords = searchFileAndPrint(fp, fieldFlag);
         nClusters = calculateNroPagDisco(nRecords);
-        printf("Numero de paginas de disco: %d\n\n", nClusters);
+
+        printf("Numero de paginas de disco: %d\n\n", nClusters); // output formatting
     }
 
     fclose(fp);
@@ -104,8 +109,8 @@ void functionality3(){
 
     return ;
 }
-//this is the main feature of functionality 4 - in it the user searches for a record, 
-//in the same way as he does in functionality 3, but in this functionality the searched record is removed
+// this is the main feature of functionality 4 - in it the user searches for a record, 
+// in the same way as he does in functionality 3, but in this functionality the searched record is removed
 void functionality4(){
     HEADER headerHeader; 
 
@@ -123,16 +128,17 @@ void functionality4(){
 
     headerHeader.status = '0';
     fseek(fp,0,SEEK_SET);
-    writeHeaderRecord(fp,&headerHeader); //I update the header because I'm modifying the file
+    writeHeaderRecord(fp,&headerHeader); //we update the header because we are modifying the file
 
     // then, the input is given for the number of searches
     int nSearches;
     scanf("%d", &nSearches);
 
     // this loop will get the name of the field and then the search key
-    char searchedField[MAXDATAFIELDNAME];  // none fixed-lenght fields are bigger than the maximum of a variable field, so this is the maximum lenght of any value of any field
+    char searchedField[MAXDATAFIELDNAME];  // this is the name(Str) of the searched field, which will be converted onto a flag
     for(int i=0;i<nSearches;i++){
         if(i != 0) fseek(fp,CLUSTERSIZE,SEEK_SET); // if it is not the first search we shall reset the file pointer to start
+        
         // we simply input which field will be searched as a string and transform it onto a fieldFlag
         scanf("%s", searchedField);
         fieldFlag = getFlag_fromDataField(searchedField);
@@ -143,7 +149,7 @@ void functionality4(){
     headerHeader.status = '1';
     fseek(fp,0,SEEK_SET);
 
-    writeHeaderRecord(fp,&headerHeader); //// update the header because I have modified the records part of the file
+    writeHeaderRecord(fp,&headerHeader); // update the header
 
     fclose(fp);
     binarioNaTela(binFilepath);
@@ -169,6 +175,7 @@ void functionality5(){
     // we read the header and rewrite it to inconsistent
     readHeader(fp, &hr);
     if(hr.status == '0') {printOpenError(); return ;} // if it is already inconsistent there is an error
+    
     hr.status = '0'; // we are modifying the header, so we put it as inconsistent and rewrite on the file
     // rewriting the header as inconsistent
     fseek(fp,0,SEEK_SET);
@@ -193,7 +200,7 @@ void functionality5(){
     free(filepath);
 }
 
-//feature 6 compresses the binary file, it permanently removes all records marked as removed 
+// functionality 6 compresses the binary file, it permanently removes all records marked as removed 
 //(which are filled with $(garbage)), making records that are not removed back to sequential
 void functionality6(){
     HEADER headerHeader; 
@@ -210,6 +217,7 @@ void functionality6(){
     readHeader(fp, &headerHeader); //read the header to modify it after compression
     if(headerHeader.status == '0') {printOpenError(); return ;}
 
+    // update the header as inconsistent
     headerHeader.status = '0';
     fseek(fp,0,SEEK_SET);
     writeHeaderRecord(fp,&headerHeader);
@@ -218,11 +226,17 @@ void functionality6(){
     FILE*auxCompact;
     auxCompact = fopen("AUX.bin", "wb"); // we will only write on the new file
 
-    compact(fp, auxCompact,&headerHeader); //I enter the function that will do the actual compression
+    compact(fp, auxCompact,&headerHeader); // we enter the function that will do the actual compression
+
+    // headerHeader comes updated from compact
+    fseek(auxCompact,0,SEEK_SET);
+    writeHeaderRecord(auxCompact,&headerHeader);
 
     fclose(fp);
     fclose(auxCompact);
 
+    // we remove the original file and rename th enew one to the original name
+    // for the user, there has been no change on filepaths
     remove(binFilepath);
     rename("AUX.bin",binFilepath);
 

@@ -1,6 +1,7 @@
 #include "../include/structCode.h"
+// this is a smaller file, but needed for modularization of functions that deal only with struct fields
 
-
+// this is a constructor for header - used in functionality1 to create table
 HEADER newHeader(){
    HEADER h;
    h.nroPagDisco = 0;
@@ -13,6 +14,7 @@ HEADER newHeader(){
    return h;
 }
 
+// this function calculates how many clusters a giver number of records occupy
 int calculateNroPagDisco(int countRecords){
    int nroPagDisco=0;
    nroPagDisco = (countRecords * DATARECORDSIZE) / CLUSTERSIZE + 1;

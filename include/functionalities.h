@@ -4,7 +4,6 @@
 #include "structCode.h"
 #include "fileRoutines.h"
 #include "funcoesFornecidas.h"
-#include "globalvalues.h"
 #include "IOFile.h"
 
 // this will be the main function for functionality 1 - that reads a csv file and stores it on a binary file
