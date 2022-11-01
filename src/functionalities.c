@@ -158,6 +158,7 @@ void functionality4(){
     return ;
 }
 
+// this is the main function for functionality 5 - which inserts records
 void functionality5(){
     DATARECORD inputdr;
     FILE* fp;
